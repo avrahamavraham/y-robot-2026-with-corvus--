@@ -1,0 +1,186 @@
+{
+  "schema_version": "1",
+  "gear_ratio": 45,
+  "mass_kg": 5.3,
+  "drum_radius_m": 0.0159,
+  "max_height_m": 0.157561,
+  "motor_initial_configs": [
+    {
+      "name": "MotorOutput",
+      "params": [
+        {
+          "name": "NeutralMode",
+          "type": "NeutralModeValue",
+          "param_value": "Coast"
+        }
+      ]
+    },
+    {
+      "name": "CurrentLimits",
+      "params": [
+        {
+          "name": "StatorCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 50.0
+        },
+        {
+          "name": "StatorCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        }
+      ]
+    }
+  ],
+  "leader_initial_configs": [
+    {
+      "name": "Feedback",
+      "params": [
+        {
+          "name": "SensorToMechanismRatio",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 45
+        }
+      ]
+    },
+    {
+      "name": "Slot0",
+      "params": [
+        {
+          "name": "kP",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 4.0
+        },
+        {
+          "name": "kI",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.0
+        },
+        {
+          "name": "kD",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 2
+        },
+        {
+          "name": "kS",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 1.2
+        },
+        {
+          "name": "kV",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 5.600691443
+        },
+        {
+          "name": "kA",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.000264564
+        },
+        {
+          "name": "kG",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.011690547
+        },
+        {
+          "name": "GravityType",
+          "type": "GravityTypeValue",
+          "param_value": "Elevator_Static"
+        }
+      ]
+    },
+    {
+      "name": "MotionMagic",
+      "params": [
+        {
+          "name": "MotionMagicCruiseVelocity",
+          "type": "double",
+          "units": "RotPerSec",
+          "param_value": 1.5
+        },
+        {
+          "name": "MotionMagicAcceleration",
+          "type": "double",
+          "units": "RotPerSecSq",
+          "param_value": 4.75
+        },
+        {
+          "name": "MotionMagicJerk",
+          "type": "double",
+          "units": "RotPerSecCu",
+          "param_value": 0
+        },
+        {
+          "name": "MotionMagicExpo_kV",
+          "type": "double",
+          "units": "VPerRotPerSec",
+          "param_value": 0
+        },
+        {
+          "name": "MotionMagicExpo_kA",
+          "type": "double",
+          "units": "VPerRotPerSecSq",
+          "param_value": 0
+        }
+      ]
+    },
+    {
+      "name": "SoftwareLimitSwitch",
+      "params": [
+        {
+          "name": "ReverseSoftLimitThreshold",
+          "type": "double",
+          "units": "Rotations",
+          "param_value": 0.0
+        },
+        {
+          "name": "ReverseSoftLimitEnable",
+          "type": "bool",
+          "param_value": false
+        }
+      ]
+    }
+  ],
+  "motor_controllers": [
+    {
+      "name": "leaderMotor",
+      "device": {
+        "id": 55,
+        "model": "TalonFX",
+        "canbus": "subsystems",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "Clockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": null,
+      "motor_arrangement": "TalonFx",
+      "orientation": "Clockwise_Positive"
+    }
+  ],
+  "setpoints": [
+    {
+      "name": "in",
+      "target_m": -0.117561
+    },
+    {
+      "name": "out",
+      "target_m": 0
+    }
+  ]
+}

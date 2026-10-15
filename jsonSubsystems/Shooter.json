@@ -1,0 +1,220 @@
+{
+  "schema_version": "1",
+  "class_name": "Flywheel",
+  "gear_ratio": 1,
+  "moi_kg_sq_m": 0.0379,
+  "motor_initial_configs": [
+    {
+      "name": "MotorOutput",
+      "params": [
+        {
+          "name": "NeutralMode",
+          "type": "NeutralModeValue",
+          "param_value": "Coast"
+        }
+      ]
+    },
+    {
+      "name": "CurrentLimits",
+      "params": [
+        {
+          "name": "StatorCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 50.0
+        },
+        {
+          "name": "StatorCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        },
+        {
+          "name": "SupplyCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 35.0
+        },
+        {
+          "name": "SupplyCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        }
+      ]
+    }
+  ],
+  "motor_controllers": [
+    {
+      "name": "leaderMotor",
+      "device": {
+        "id": 40,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "Clockwise_Positive"
+              }
+            ]
+          },
+          {
+            "name": "Feedback",
+            "params": [
+              {
+                "name": "SensorToMechanismRatio",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 1.0
+              }
+            ]
+          },
+          {
+            "name": "Slot0",
+            "params": [
+              {
+                "name": "kP",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.717
+              },
+              {
+                "name": "kI",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.0
+              },
+              {
+                "name": "kD",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.0
+              },
+              {
+                "name": "kS",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.14492
+              },
+              {
+                "name": "kV",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.12446
+              },
+              {
+                "name": "kA",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.08418
+              }
+            ]
+          }
+        ]
+      },
+      "leader": null,
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    },
+    {
+      "name": "followerMotor1",
+      "device": {
+        "id": 41,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": {
+        "name": "leaderMotor",
+        "motor_alignment": "Aligned"
+      },
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    },
+    {
+      "name": "followerMotor2",
+      "device": {
+        "id": 42,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": {
+        "name": "leaderMotor",
+        "motor_alignment": "Opposed"
+      },
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    },
+        {
+      "name": "followerMotor3",
+      "device": {
+        "id": 43,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": {
+        "name": "leaderMotor",
+        "motor_alignment": "Opposed"
+      },
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    }
+  ],
+  "setpoints": [
+    {
+      "name": "Near",
+      "targets": [
+        10.0
+      ]
+    },
+    {
+      "name": "Mid",
+      "targets": [
+        25.0
+      ]
+    },
+    {
+      "name": "Far",
+      "targets": [
+        40.0
+      ]
+    }
+  ]
+}

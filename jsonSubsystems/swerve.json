@@ -1,0 +1,127 @@
+{
+  "schema_version": "1",
+  "options": {
+    "horizontal_track_size_in": 9.375,
+    "vertical_track_size_in": 12.375,
+    "wheel_radius_in": 3.0,
+    "module_config": {
+      "drive_ratio": 6.746031746031747,
+      "steer_ratio": 21.428571428571427,
+      "coupling_ratio": 3.5714285714285716
+    },
+    "is_left_inverted": false,
+    "is_right_inverted": true,
+    "gyro": {
+      "id": 0,
+      "model": "Pigeon2",
+      "canbus": "swerve"
+    }
+  },
+  "modules": [
+    {
+      "id": "FL",
+      "drive_motor": {
+        "device": { "id": 2, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "steer_motor": {
+        "device": { "id": 1, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "encoder": { "id": 1, "model": "CANcoder", "canbus": "swerve" },
+      "encoder_type": "CANcoder",
+      "encoder_offset": -0.212890625,
+      "is_steer_inverted": true,
+      "is_encoder_inverted": false
+    },
+    {
+      "id": "FR",
+      "drive_motor": {
+        "device": { "id": 3, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "steer_motor": {
+        "device": { "id": 4, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "encoder": { "id": 2, "model": "CANcoder", "canbus": "swerve" },
+      "encoder_type": "CANcoder",
+      "encoder_offset": -0.28955078125,
+      "is_steer_inverted": true,
+      "is_encoder_inverted": false
+    },
+    {
+      "id": "BL",
+      "drive_motor": {
+        "device": { "id": 5, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "steer_motor": {
+        "device": { "id": 6, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "encoder": { "id": 3, "model": "CANcoder", "canbus": "swerve" },
+      "encoder_type": "CANcoder",
+      "encoder_offset": 0.446533203125,
+      "is_steer_inverted": true,
+      "is_encoder_inverted": false
+    },
+    {
+      "id": "BR",
+      "drive_motor": {
+        "device": { "id": 7, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "steer_motor": {
+        "device": { "id": 8, "model": "TalonFX", "canbus": "swerve" },
+        "constants": {
+          "motor_arrangement": "TalonFx",
+          "free_speed_rps": 87.08,
+          "slip_current_limit": 65.0,
+          "steer_stator_limit": 60.0
+        }
+      },
+      "encoder": { "id": 4, "model": "CANcoder", "canbus": "swerve" },
+      "encoder_type": "CANcoder",
+      "encoder_offset": -0.1591796875,
+      "is_steer_inverted": true,
+      "is_encoder_inverted": false
+    }
+  ],
+  "team_number": 3211
+}

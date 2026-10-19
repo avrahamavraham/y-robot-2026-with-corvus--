@@ -36,7 +36,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Shooter extends SubsystemBase {
-    /** Velocity setpoints for the flywheel. */
+    /** Velocity setpoints for the shooter. */
     public enum Setpoint {
         Near(RotationsPerSecond.of(10)),
         Mid(RotationsPerSecond.of(25)),
@@ -82,7 +82,7 @@ public class Shooter extends SubsystemBase {
 
     /* Mechanism2d visualization for motor leaderMotor */
     private final Mechanism2d leaderMotorMech2d = new Mechanism2d(2, 2);
-    private final MechanismLigament2d leaderMotorFlywheelMech2d = leaderMotorMech2d.getRoot("leaderMotor Root", 1, 1)
+    private final MechanismLigament2d leaderMotorShooterMech2d = leaderMotorMech2d.getRoot("leaderMotor Root", 1, 1)
         .append(new MechanismLigament2d("leaderMotor", 1, 0));
 
     /** Configs common across all TalonFX motors. */
@@ -171,7 +171,7 @@ public class Shooter extends SubsystemBase {
         /* set the default command to neutral output */
         setDefaultCommand(coast());
 
-        SmartDashboard.putData("Flywheel leaderMotor", leaderMotorMech2d);
+        SmartDashboard.putData("Shooter leaderMotor", leaderMotorMech2d);
 
         if (Utils.isSimulation()) {
             startSimThread();
@@ -193,7 +193,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Creates a new trigger to detect when the flywheel is near the
+     * Creates a new trigger to detect when the shooter is near the
      * target within the provided threshold.
      *
      * @param threshold The velocity error threshold
@@ -207,7 +207,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Drives the flywheel to the provided velocity setpoint.
+     * Drives the shooter to the provided velocity setpoint.
      *
      * @param setpoint Function returning the setpoint to apply
      * @return Command to run
@@ -222,7 +222,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Coasts the flywheel.
+     * Coasts the shooter.
      *
      * @return Command to run
      */
@@ -240,7 +240,7 @@ public class Shooter extends SubsystemBase {
             leaderMotorTorqueCurrent
         );
 
-        leaderMotorFlywheelMech2d.setLength(
+        leaderMotorShooterMech2d.setLength(
             leaderMotorVelocity.getValueAsDouble() / 100.0 * kGearRatio
         );
     }
@@ -275,7 +275,7 @@ public class Shooter extends SubsystemBase {
             followerMotor2Sim.setSupplyVoltage(RobotController.getBatteryVoltage());
             followerMotor3Sim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-            /* Then calculate the new position and velocity of the simulated flywheel */
+            /* Then calculate the new position and velocity of the simulated shooter */
             dcMotorSim_leaderMotor.setInputVoltage(leaderMotorSim.getMotorVoltage());
             dcMotorSim_leaderMotor.update(deltaTime);
 

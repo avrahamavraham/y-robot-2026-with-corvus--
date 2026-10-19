@@ -1,5 +1,6 @@
 {
   "schema_version": "1",
+  "class_name" : "LinearArm",
   "gear_ratio": 45,
   "mass_kg": 5.3,
   "drum_radius_m": 0.0159,
@@ -176,7 +177,7 @@
   "setpoints": [
     {
       "name": "in",
-      "target_m": -0.117561
+      "target_m": 0.117561
     },
     {
       "name": "out",

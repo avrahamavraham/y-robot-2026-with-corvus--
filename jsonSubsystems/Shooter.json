@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "class_name": "Flywheel",
+  "class_name": "Shooter",
   "gear_ratio": 1,
   "moi_kg_sq_m": 0.0379,
   "motor_initial_configs": [

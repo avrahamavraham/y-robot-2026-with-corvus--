@@ -4,13 +4,16 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.HootAutoReplay;
+import com.ctre.phoenix6.HootReplay;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
+    private CANBus replayCanbus = new CANBus("*", "logs/check/check.hoot");
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
@@ -27,7 +30,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run(); 
+        CommandScheduler.getInstance().run();
     }
 
     @Override
@@ -37,7 +40,9 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {}
 
     @Override
-    public void disabledExit() {}
+    public void disabledExit() {
+        m_robotContainer.resetRobot();
+    }
 
     @Override
     public void autonomousInit() {

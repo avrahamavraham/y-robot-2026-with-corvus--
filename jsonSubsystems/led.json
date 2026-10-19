@@ -1,0 +1,111 @@
+{
+  "schema_version": "1",
+  "candle": {
+    "id": 0,
+    "model": "CANdle",
+    "canbus": "canivore"
+  },
+  "anim_slots": [
+    {
+      "name": "ColorFlowAnimation",
+      "params": [
+        {
+          "name": "LEDStartIndex",
+          "type": "int",
+          "param_value": 0,
+          "is_required": true
+        },
+        {
+          "name": "LEDEndIndex",
+          "type": "int",
+          "param_value": 29,
+          "is_required": true
+        },
+        {
+          "name": "Slot",
+          "type": "int",
+          "param_value": 0,
+          "is_required": false
+        },
+        {
+          "name": "Color",
+          "type": "RGBWColor",
+          "param_value": [
+            {
+              "type": "int",
+              "param_value": 0
+            },
+            {
+              "type": "int",
+              "param_value": 217
+            },
+            {
+              "type": "int",
+              "param_value": 0
+            },
+            {
+              "type": "int",
+              "param_value": 0
+            }
+          ],
+          "is_required": false
+        },
+        {
+          "name": "Direction",
+          "type": "AnimationDirectionValue",
+          "param_value": "Forward",
+          "is_required": false
+        },
+        {
+          "name": "FrameRate",
+          "type": "double",
+          "units": "Hertz",
+          "param_value": 25.0,
+          "is_required": false
+        }
+      ]
+    }
+  ],
+  "solid_colors": [
+    {
+      "name": "SolidColor",
+      "params": [
+        {
+          "name": "LEDStartIndex",
+          "type": "int",
+          "param_value": 30,
+          "is_required": true
+        },
+        {
+          "name": "LEDEndIndex",
+          "type": "int",
+          "param_value": 59,
+          "is_required": true
+        },
+        {
+          "name": "Color",
+          "type": "RGBWColor",
+          "param_value": [
+            {
+              "type": "int",
+              "param_value": 217
+            },
+            {
+              "type": "int",
+              "param_value": 0
+            },
+            {
+              "type": "int",
+              "param_value": 0
+            },
+            {
+              "type": "int",
+              "param_value": 0
+            }
+          ],
+          "is_required": false
+        }
+      ]
+    }
+  ]
+}

@@ -4,17 +4,19 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -22,8 +24,8 @@ import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeRoller;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.LinearArm;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -57,18 +59,30 @@ public class RobotContainer {
         SwerveBinding();
         //Intake
         IntakeBinding();
-
-        
+        //shoter
+        ShooterBinding();
+                
     }
+                
         
+    private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
+    private void ShooterBinding() {
+        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
+        joystick.b().onTrue(Commands.runOnce(()->{
+            if (shooterSetpoint == Shooter.Setpoint.Near) {
+                shooterSetpoint = Shooter.Setpoint.Far;
+            }
+            else{
+                shooterSetpoint = Shooter.Setpoint.Near;
+            }
+        }));
+    }
 
-        
     public Command getAutonomousCommand() {
         // Simple drive forward auton
         final var idle = new SwerveRequest.Idle();
         return Commands.sequence(
         
-            Commands.runOnce(()-> DriverStationSim.setAllianceStationId(AllianceStationID.Blue1)),
             // Reset our field centric heading to match the robot
             // facing away from our alliance station wall (0 deg).
             drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
@@ -85,6 +99,8 @@ public class RobotContainer {
 
     private void SwerveBinding(){
         drivetrain.register();
+        //pathPlanner
+        // PathPlannerOptional.configureAutoBuilder(drivetrain);
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -107,12 +123,25 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
     }
-        private void IntakeBinding() {
-        joystick.a().onTrue(Commands.either(
-            linear_arm.goToSetpoint(()-> LinearArm.Setpoint.in),
-            linear_arm.goToSetpoint(()-> LinearArm.Setpoint.out),
-            ()-> linear_arm.getPosition().isNear(LinearArm.Setpoint.out.target, 
-            Degree.of(10))
-        ));
+    private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
+    private void IntakeBinding() {
+        joystick.a().onTrue(Commands.runOnce(()->{
+            if (LinearArmsetpoint == LinearArm.Setpoint.in) {
+                LinearArmsetpoint = LinearArm.Setpoint.out;
+            }
+            else{
+                LinearArmsetpoint = LinearArm.Setpoint.in;
+            }
+        }));
+    linear_arm.setDefaultCommand(linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
+    }
+    public void resetRobot(){
+        System.out.println(DriverStation.isDisabled());
+        CommandScheduler.getInstance().schedule(
+            linear_arm.calibrateZero(),
+            shooter.coast(),
+            intakeRoller.coast(),
+            drivetrain.applyRequest(()->new SwerveRequest.Idle()).withTimeout(1)
+            );
     }
 }

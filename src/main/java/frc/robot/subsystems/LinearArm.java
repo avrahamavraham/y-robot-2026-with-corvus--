@@ -18,6 +18,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -37,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class LinearArm extends SubsystemBase {
     /** Position setpoints for the elevator. */
     public enum Setpoint {
-        in(Meters.of(-0.117561)),
+        in(Meters.of(0.117561)),
         out(Meters.of(0));
 
         /** The position target of the setpoint in angular units. */
@@ -73,7 +74,7 @@ public class LinearArm extends SubsystemBase {
     /* controls used by the leader motors */
     private final MotionMagicVoltage setpointRequest = new MotionMagicVoltage(0);
     private final DutyCycleOut manualRequest = new DutyCycleOut(0);
-    private final DutyCycleOut calibrationRequest = new DutyCycleOut(0.1)
+    private final DutyCycleOut calibrationRequest = new DutyCycleOut(-0.1)
         .withIgnoreHardwareLimits(true)
         .withIgnoreSoftwareLimits(true);
 
@@ -87,7 +88,7 @@ public class LinearArm extends SubsystemBase {
     private final ElevatorSim elevatorSim_leaderMotor = new ElevatorSim(
         DCMotor.getKrakenX60Foc(1),
         kGearRatio, 5.3, kDrumRadius.in(Meters),
-        0.0, kMaxHeight.in(Meters), false, 0.0
+        0.0, kMaxHeight.in(Meters), true, 0.0
     );
 
     private static final double kSimLoopPeriod = 0.002; // 2 ms
@@ -97,7 +98,7 @@ public class LinearArm extends SubsystemBase {
     /* Mechanism2d visualization of the elevator */
     private final Mechanism2d mech2d = new Mechanism2d(1, kMaxHeight.in(Meters));
     private final MechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
-        .append(new MechanismLigament2d("leaderMotor", elevatorSim_leaderMotor.getPositionMeters(), -30));
+        .append(new MechanismLigament2d("leaderMotor", elevatorSim_leaderMotor.getPositionMeters(), 90));
 
     /** Configs common across all motors. */
     private static final TalonFXConfiguration motorInitialConfigs = new TalonFXConfiguration()
@@ -157,11 +158,11 @@ public class LinearArm extends SubsystemBase {
 
 
         /* set the default command to neutral output */
-        // setDefaultCommand(manualDrive(() -> 0.0));
+        setDefaultCommand(manualDrive(() -> 0.0));
         /* alternatively, the default command can hold position */
-        setDefaultCommand(holdPosition());
+        // setDefaultCommand(holdPosition());
 
-        SmartDashboard.putData("LinearArm", mech2d);
+        SmartDashboard.putData("Elevator", mech2d);
 
         if (Utils.isSimulation()) {
             startSimThread();

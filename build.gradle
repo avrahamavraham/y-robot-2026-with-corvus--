@@ -84,6 +84,14 @@ test {
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
+// Cap the JVM heap in simulation so memory use is closer to the roboRIO.
+// Change the number to test other limits (e.g. "-Xmx256m").
+tasks.withType(JavaExec).configureEach {
+    if (name.startsWith("simulate")) {
+        jvmArgs "-Xmx512m"
+    }
+}
+
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.

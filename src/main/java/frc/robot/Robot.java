@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-    private CANBus replayCanbus = new CANBus("*", "logs/check/check.hoot");
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
@@ -24,12 +23,27 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        // java.io.File f = new java.io.File("logs/check/check.hoot");
+        // System.out.println("cwd=" + new java.io.File(".").getAbsolutePath());
+        // System.out.println("exists=" + f.exists() + " size=" + f.length());
+        // try {
+        //     System.out.println("status=" + HootReplay.loadFile(f.getPath()));
+        // } catch (IllegalArgumentException e) {
+        //     System.out.println("loadFile threw: " + e.getMessage());
+        // }
+        // System.out.println("loaded=" + HootReplay.isFileLoaded());
         m_robotContainer = new RobotContainer();
     }
 
     @Override
     public void robotPeriodic() {
-        System.out.println(HootReplay.isFileLoaded());
+        Runtime rt = Runtime.getRuntime();
+        long used = rt.totalMemory() - rt.freeMemory();
+        long max = rt.maxMemory();
+        // if ( used / 1_048_576 > 512) {
+            System.out.printf("Heap: %d MB used of %d MB max%n", used / 1_048_576, max / 1_048_576);        
+        // }
+        // System.out.println(HootReplay.isFileLoaded());
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run();
     }

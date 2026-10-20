@@ -185,6 +185,10 @@ public class IntakeRoller extends SubsystemBase {
     public Command drive(Supplier<Setpoint> setpoint) {
         return run(() -> {
             final var target = setpoint.get();
+            if (target.leaderMotorTarget.isEquivalent(RPM.of(0))) {
+                leaderMotor.setControl(coastRequest);
+                return;
+            }
             leaderMotor.setControl(
                 leaderMotorSetpointRequest.withVelocity(target.leaderMotorTarget)
             );
@@ -216,6 +220,7 @@ public class IntakeRoller extends SubsystemBase {
     }
 
     private void startSimThread() {
+        
         leaderMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
         leaderMotor.getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX60);
         followerMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;

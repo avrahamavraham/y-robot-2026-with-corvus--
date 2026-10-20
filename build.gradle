@@ -10,6 +10,9 @@ java {
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
+
+final MAX_JAVA_HEAP_SIZE_MB = 100
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
@@ -27,13 +30,23 @@ deploy {
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+                    gcType = 'other'
+
+                    // Set the minimum heap size to the maximum heap size to avoid resizing
+                    jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-XX:GCTimeRatio=5")
+                    //jvmArgs.add("-ea") // Enable assertions
+                    jvmArgs.add("-XX:+UseSerialGC")
+                    jvmArgs.add("-XX:MaxGCPauseMillis=50")
+                    jvmArgs.add("-XX:+AlwaysPreTouch")// Pre-touch memory pages used by the JVM during initialization
                 }
 
                 // Static files artifact
                 frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
                     files = project.fileTree('src/main/deploy')
                     directory = '/home/lvuser/deploy'
-                    deleteOldFiles = false // Change to true to delete files on roboRIO that no
+                    deleteOldFiles = true // Change to true to delete files on roboRIO that no
                                            // longer exist in deploy directory of this project
                 }
             }

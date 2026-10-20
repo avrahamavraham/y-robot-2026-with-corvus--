@@ -110,6 +110,7 @@ public class Robot extends TimedRobot {
     private void checkMemory() {
         Runtime rt = Runtime.getRuntime();
         long max = rt.maxMemory();
+        System.out.println(max);
         long available = max - (rt.totalMemory() - rt.freeMemory());
         double fraction = (double) available / max;
  

@@ -4,11 +4,13 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.HootAutoReplay;
-import com.ctre.phoenix6.HootReplay;
 
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -37,12 +39,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
-        Runtime rt = Runtime.getRuntime();
-        long used = rt.totalMemory() - rt.freeMemory();
-        long max = rt.maxMemory();
-        // if ( used / 1_048_576 > 512) {
-            System.out.printf("Heap: %d MB used of %d MB max%n", used / 1_048_576, max / 1_048_576);        
-        // }
+        checkMemory();
         // System.out.println(HootReplay.isFileLoaded());
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run();
@@ -100,4 +97,35 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {}
+
+
+    /* low heap warning: alert turns on below kLowMemFraction available, off again above kRecoverMemFraction */
+    private static final double kLowMemFraction = 0.10;
+    private static final double kRecoverMemFraction = 0.15;
+    private static final double kMemWarnCooldownSec = 5.0;
+    private final Alert m_lowMemoryAlert = new Alert("Low heap memory", AlertType.kWarning);
+    private double m_lastMemWarnTime = 0.0;
+ 
+    /** Warns (dashboard alert + throttled Driver Station warning) when the Java heap is nearly full. */
+    private void checkMemory() {
+        Runtime rt = Runtime.getRuntime();
+        long max = rt.maxMemory();
+        long available = max - (rt.totalMemory() - rt.freeMemory());
+        double fraction = (double) available / max;
+ 
+        if (fraction < kLowMemFraction) {
+            double now = Timer.getFPGATimestamp();
+            if (!m_lowMemoryAlert.get() || now - m_lastMemWarnTime > kMemWarnCooldownSec) {
+                m_lastMemWarnTime = now;
+                String msg = "Low heap memory: " + available / 1_048_576 + " MB available of "
+                    + max / 1_048_576 + " MB";
+                m_lowMemoryAlert.setText(msg);
+                DriverStation.reportWarning(msg, false);
+            }
+            m_lowMemoryAlert.set(true);
+        } else if (fraction > kRecoverMemFraction) {
+            m_lowMemoryAlert.set(false);
+        }
+    }
+
 }

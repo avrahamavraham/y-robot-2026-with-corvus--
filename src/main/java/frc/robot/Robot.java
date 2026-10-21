@@ -111,7 +111,7 @@ public class Robot extends TimedRobot {
         Runtime rt = Runtime.getRuntime();
         long max = rt.maxMemory();
         // System.out.println(rt.availableProcessors());
-        System.out.println(max/ 1_048_576);
+        // System.out.println(max/ 1_048_576);
         long available = max - (rt.totalMemory() - rt.freeMemory());
         // System.out.println(available / 1_048_576);
         double fraction = (double) available / max;
@@ -120,7 +120,8 @@ public class Robot extends TimedRobot {
             double now = Timer.getFPGATimestamp();
             if (!m_lowMemoryAlert.get() || now - m_lastMemWarnTime > kMemWarnCooldownSec) {
                 m_lastMemWarnTime = now;
-                String msg = "Low heap memory: " + available / 1_048_576 + " MB available of "
+                String msg = "Low heap memory: " + available / 1_048_576 + 
+                " MB available of "
                     + max / 1_048_576 + " MB";
                 m_lowMemoryAlert.setText(msg);
                 DriverStation.reportWarning(msg, false);

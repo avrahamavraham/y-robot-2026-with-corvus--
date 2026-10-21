@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeRoller;
 import frc.robot.subsystems.LinearArm;
 import frc.robot.subsystems.Shooter;
@@ -50,6 +51,7 @@ public class RobotContainer {
     public final LinearArm linear_arm = new LinearArm();
     public final Shooter shooter = new Shooter();
     public final IntakeRoller intakeRoller = new IntakeRoller();
+    public final Indexer indexer = new Indexer();
     public RobotContainer() {
         configureBindings();
     }
@@ -65,18 +67,6 @@ public class RobotContainer {
     }
                 
         
-    private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
-    private void ShooterBinding() {
-        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
-        joystick.b().onTrue(Commands.runOnce(()->{
-            if (shooterSetpoint == Shooter.Setpoint.Near) {
-                shooterSetpoint = Shooter.Setpoint.Far;
-            }
-            else{
-                shooterSetpoint = Shooter.Setpoint.Near;
-            }
-        }));
-    }
 
     public Command getAutonomousCommand() {
         // Simple drive forward auton
@@ -94,6 +84,25 @@ public class RobotContainer {
             // Finally idle for the rest of auton
             drivetrain.applyRequest(() -> idle)
         );
+    }
+    private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
+    private Indexer.Setpoint indexerSetpoint = Indexer.Setpoint.stop;
+    private void ShooterBinding() {
+        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
+        joystick.b().onTrue(Commands.runOnce(()->{
+            if (shooterSetpoint == Shooter.Setpoint.Near) {
+                shooterSetpoint = Shooter.Setpoint.Far;
+            }
+            else{
+                shooterSetpoint = Shooter.Setpoint.Near;
+            }
+        }));
+        indexer.setDefaultCommand(indexer.drive(()->{return indexerSetpoint;}));
+        shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
+            indexerSetpoint = Indexer.Setpoint.index;
+        })).onFalse(Commands.runOnce(()->{
+            indexerSetpoint = Indexer.Setpoint.stop;
+        }));
     }
 
 

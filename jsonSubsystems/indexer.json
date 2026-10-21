@@ -1,0 +1,136 @@
+{
+  "schema_version": "1",
+  "class_name": "indexer",
+  "gear_ratio": 6.666,
+  "moi_kg_sq_m": 0.1,
+  "motor_initial_configs": [
+    {
+      "name": "MotorOutput",
+      "params": [
+        {
+          "name": "NeutralMode",
+          "type": "NeutralModeValue",
+          "param_value": "Coast"
+        }
+      ]
+    },
+    {
+      "name": "CurrentLimits",
+      "params": [
+        {
+          "name": "StatorCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 30
+        },
+        {
+          "name": "StatorCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        },
+        {
+          "name": "SupplyCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 15.0
+        },
+        {
+          "name": "SupplyCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        }
+      ]
+    }
+  ],
+  "motor_controllers": [
+    {
+      "name": "leaderMotor",
+      "device": {
+        "id": 25,
+        "model": "TalonFX",
+        "canbus": "subsystems",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          },
+          {
+            "name": "Feedback",
+            "params": [
+              {
+                "name": "SensorToMechanismRatio",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 6.6666
+              }
+            ]
+          },
+          {
+            "name": "Slot0",
+            "params": [
+              {
+                "name": "kP",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.503281084
+              },
+              {
+                "name": "kI",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.0
+              },
+              {
+                "name": "kD",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.0
+              },
+              {
+                "name": "kS",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.29879
+              },
+              {
+                "name": "kV",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.829649092
+              },
+              {
+                "name": "kA",
+                "type": "double",
+                "units": "Scalar",
+                "param_value": 0.133293018
+              }
+            ]
+          }
+        ]
+      },
+      "leader": null,
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    }
+  ],
+  "setpoints": [
+    {
+      "name": "index",
+      "targets": [
+        15.00150015
+      ]
+    },
+    {
+      "name": "stop",
+      "targets": [
+        0
+      ]
+    }
+  ]
+}

@@ -1,34 +1,34 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface VisionIO {
+      public default void updateInputs(VisionIOInputs inputs) {}
+
     public class VisionIOInputs {
-        public VisionIOInputs(){
-            
-        }
-        /** One robot pose estimate computed from the camera. */
+        public boolean connected = false;
+        public TargetObservation latestTargetObservation =
+            new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
+        public PoseObservation[] poseObservations = new PoseObservation[0];
+        public int[] tagIds = new int[0];
+        public VisionIOInputs(){}
+    }
+        /** Represents a robot pose sample used for pose estimation. */
     public static record PoseObservation(
-        /** Capture time in FPGA timebase, seconds. */
         double timestamp,
-        /** Estimated robot pose in field (blue-origin) coordinates. */
         Pose3d pose,
-        /** Tag pose ambiguity, 0 (good) to 1 (bad). Use 0 for multi-tag / MegaTag2. */
         double ambiguity,
-        /** Number of tags used for this estimate. */
         int tagCount,
-        /** Average distance from the camera to the tags used, meters. */
         double averageTagDistance,
-        /** How this estimate was produced. */
         PoseObservationType type) {}
-    
+
     public static enum PoseObservationType {
         MEGATAG_1,
         MEGATAG_2,
-        SIM
+        PHOTONVISION
     }
- 
 
+    public static record TargetObservation(Rotation2d tx, Rotation2d ty) {}
         
-    }
 }

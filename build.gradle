@@ -102,7 +102,7 @@ wpi.sim.addDriverstation()
 tasks.withType(JavaExec).configureEach {
     if (name.startsWith("simulate")) {
         jvmArgs "-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "m"
-        jvmArgs "-Xms." + MAX_JAVA_HEAP_SIZE_MB + "m"
+        jvmArgs "-Xms" + MAX_JAVA_HEAP_SIZE_MB + "m"
         jvmArgs "-XX:ActiveProcessorCount=2"
         jvmArgs "-XX:+UseSerialGC"
     }

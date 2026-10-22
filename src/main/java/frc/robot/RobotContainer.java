@@ -25,6 +25,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeRoller;
+import frc.robot.subsystems.Kicker;
 import frc.robot.subsystems.LinearArm;
 import frc.robot.subsystems.Shooter;
 
@@ -43,15 +44,15 @@ public class RobotContainer {
     //swerve and chasis 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final AutoFactory autoFactory = new AutoFactory(
-        new PIDController(2, 0, 0),
-        new PIDController(2, 0, 0),
-        new PIDController(2, 0, 0),
+        new PIDController(2.3, 0, 0),
+        new PIDController(2.3, 0, 0),
         drivetrain);
     //subsystems
     public final LinearArm linear_arm = new LinearArm();
     public final Shooter shooter = new Shooter();
     public final IntakeRoller intakeRoller = new IntakeRoller();
     public final Indexer indexer = new Indexer();
+    public final Kicker kicker = new Kicker();
     public RobotContainer() {
         configureBindings();
     }
@@ -76,20 +77,22 @@ public class RobotContainer {
             // Reset our field centric heading to match the robot
             // facing away from our alliance station wall (0 deg).
             drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            Commands.waitSeconds(5),
+            Commands.waitSeconds(1),
             autoFactory.driveToPoint(
                 new Pose2d(2, 2, Rotation2d.fromDegrees(40)),
-                new Pose2d(6,6,Rotation2d.fromDegrees(260))
+                new Pose2d(6,6,Rotation2d.fromDegrees(260)),
+                new Pose2d()
                 ),
             // Finally idle for the rest of auton
             drivetrain.applyRequest(() -> idle)
         );
     }
+    private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
     private Indexer.Setpoint indexerSetpoint = Indexer.Setpoint.stop;
     private void ShooterBinding() {
-        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
         joystick.b().onTrue(Commands.runOnce(()->{
+            System.out.println("check");
             if (shooterSetpoint == Shooter.Setpoint.Near) {
                 shooterSetpoint = Shooter.Setpoint.Far;
             }
@@ -97,12 +100,19 @@ public class RobotContainer {
                 shooterSetpoint = Shooter.Setpoint.Near;
             }
         }));
-        indexer.setDefaultCommand(indexer.drive(()->{return indexerSetpoint;}));
+        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
         shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.index;
         })).onFalse(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.stop;
         }));
+        indexer.setDefaultCommand(indexer.drive(()->{return indexerSetpoint;}));
+        indexer.createIsNearTargetTrigger(RotationsPerSecond.of(1)).onTrue(Commands.runOnce(()->{
+            kickerSetpoint = Kicker.Setpoint.kicking;
+        })).onFalse(Commands.runOnce(()->{
+            kickerSetpoint = Kicker.Setpoint.stop;
+        }));
+        kicker.setDefaultCommand(kicker.drive(()->{return kickerSetpoint;}));
     }
 
 

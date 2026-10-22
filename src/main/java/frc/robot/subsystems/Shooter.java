@@ -241,7 +241,7 @@ public class Shooter extends SubsystemBase {
         );
 
         leaderMotorShooterMech2d.setLength(
-            leaderMotorVelocity.getValueAsDouble() / 100.0 * kGearRatio
+            leaderMotorVelocity.getValueAsDouble() / 10 * kGearRatio
         );
     }
 

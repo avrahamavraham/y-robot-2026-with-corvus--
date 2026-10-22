@@ -28,10 +28,10 @@ public class AutoFactory {
     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
     .withSteerRequestType(SteerRequestType.Position)
     .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
-    public AutoFactory(PIDController xController,PIDController yController,
+    public AutoFactory(PIDController xController,
     PIDController rotController,CommandSwerveDrivetrain drivetrain){
         this.xController = xController;
-        this.yController = yController;
+        this.yController = xController;
         this.rotController = rotController;
         rotController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -52,7 +52,7 @@ public class AutoFactory {
                 //change the numbers to your liking the smaller it is the better tune pid you need
                 return Math.abs(xController.getError()) < 0.04
                 && Math.abs(yController.getError()) < 0.04
-                && Math.abs(rotController.getError()) < Math.toRadians(7);
+                && Math.abs(rotController.getError()) < Math.toRadians(4);
             });
     }
     public Command driveToPoint(Pose2d... pose){

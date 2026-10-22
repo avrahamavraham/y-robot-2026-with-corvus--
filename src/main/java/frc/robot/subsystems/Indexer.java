@@ -193,7 +193,7 @@ public class Indexer extends SubsystemBase {
         );
 
         leaderMotorIndexerMech2d.setLength(
-            leaderMotorVelocity.getValueAsDouble() / 100.0 * kGearRatio
+            leaderMotorVelocity.getValueAsDouble() / 10.0 * kGearRatio
         );
     }
 

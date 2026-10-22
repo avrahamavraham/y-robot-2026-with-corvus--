@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 /** IO implementation for real Limelight hardware. */
 public class VisionIOLimelight implements VisionIO {
+  private final double StdDevFactor;
   private final Supplier<Rotation2d> rotationSupplier;
   private final DoubleArrayPublisher orientationPublisher;
 
@@ -39,8 +40,9 @@ public class VisionIOLimelight implements VisionIO {
    * @param name The configured name of the Limelight.
    * @param rotationSupplier Supplier for the current estimated rotation, used for MegaTag 2.
    */
-  public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier) {
+  public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier, double stdDevFactor) {
     var table = NetworkTableInstance.getDefault().getTable(name);
+    this.StdDevFactor = stdDevFactor;
     this.rotationSupplier = rotationSupplier;
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
@@ -49,6 +51,10 @@ public class VisionIOLimelight implements VisionIO {
     megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[] {});
     megatag2Subscriber =
         table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
+  }
+  @Override
+  public double getStdDevFactors(){
+    return StdDevFactor;
   }
 
   @Override
@@ -125,16 +131,16 @@ public class VisionIOLimelight implements VisionIO {
     }
 
     // Save pose observations to inputs object
-    inputs.poseObservations = new PoseObservation[poseObservations.size()];
+    inputs.poseObservations.clear();
     for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.poseObservations[i] = poseObservations.get(i);
+      inputs.poseObservations.add(i, poseObservations.get(i));
     }
 
     // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
+    inputs.tagIds.clear();
     int i = 0;
     for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
+      inputs.tagIds.add(i++, id);
     }
   }
 

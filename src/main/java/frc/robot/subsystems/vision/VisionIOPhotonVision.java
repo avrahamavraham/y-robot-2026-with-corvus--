@@ -21,9 +21,11 @@ import org.photonvision.PhotonCamera;
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
 
-  public static AprilTagFieldLayout aprilTagLayout =
+  public AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
+
+  private final double StdDevFactor;
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
 
@@ -33,9 +35,15 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param name The configured name of the camera.
    * @param robotToCamera The 3D position of the camera relative to the robot.
    */
-  public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
+  public VisionIOPhotonVision(String name, Transform3d robotToCamera,double stdDevFactor) {
+    this.StdDevFactor = stdDevFactor;
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
+  }
+  
+  @Override
+  public double getStdDevFactors(){
+    return StdDevFactor;
   }
 
   @Override
@@ -114,16 +122,14 @@ public class VisionIOPhotonVision implements VisionIO {
     }
 
     // Save pose observations to inputs object
-    inputs.poseObservations = new PoseObservation[poseObservations.size()];
-    for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.poseObservations[i] = poseObservations.get(i);
-    }
-
+    inputs.poseObservations.clear();
+    inputs.poseObservations.addAll(poseObservations);
     // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
+    inputs.tagIds.clear();
     int i = 0;
     for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
+      inputs.tagIds.add(i++, id);
     }
+
   }
 }

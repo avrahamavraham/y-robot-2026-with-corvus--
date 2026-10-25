@@ -42,6 +42,7 @@ public class Robot extends TimedRobot {
         checkMemory();
         // System.out.println(HootReplay.isFileLoaded());
         m_timeAndJoystickReplay.update();
+        m_robotContainer.Periodic();
         CommandScheduler.getInstance().run();
     }
 

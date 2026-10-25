@@ -14,6 +14,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -28,6 +30,9 @@ import frc.robot.subsystems.IntakeRoller;
 import frc.robot.subsystems.Kicker;
 import frc.robot.subsystems.LinearArm;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -53,7 +58,18 @@ public class RobotContainer {
     public final IntakeRoller intakeRoller = new IntakeRoller();
     public final Indexer indexer = new Indexer();
     public final Kicker kicker = new Kicker();
+    public final  Vision vision;
     public RobotContainer() {
+        if (Robot.isReal()) {
+            vision = new Vision(drivetrain, 
+            new VisionIOLimelight("limelight-gg", ()->drivetrain.getState().Pose.getRotation(), 0.2));
+        } else {
+            vision = new Vision(drivetrain,
+            new VisionIOPhotonVisionSim("limelight-gg", 
+                new Transform3d(-0.1808, -0.023073, 0.44788, new Rotation3d(0,0,Math.PI)), 
+                ()->drivetrain.getState().Pose, 0.2)            
+            );
+        }
         configureBindings();
     }
 
@@ -65,6 +81,10 @@ public class RobotContainer {
         //shoter
         ShooterBinding();
                 
+    }
+
+    public void Periodic(){
+        vision.periodic();
     }
                 
         

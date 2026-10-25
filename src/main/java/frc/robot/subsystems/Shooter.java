@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -221,6 +222,12 @@ public class Shooter extends SubsystemBase {
         });
     }
 
+
+    public Command drive(DoubleSupplier setpoint){
+        return run(()->{
+            leaderMotor.setControl(leaderMotorSetpointRequest.withVelocity(setpoint.getAsDouble()));
+        });
+    }
     /**
      * Coasts the shooter.
      *

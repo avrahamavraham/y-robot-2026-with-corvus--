@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.Commands.SwerveCommands;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -137,6 +138,7 @@ public class RobotContainer {
 
 
     private void SwerveBinding(){
+        SwerveCommands swerveCommands = new SwerveCommands(drivetrain);
         drivetrain.register();
         //pathPlanner
         // PathPlannerOptional.configureAutoBuilder(drivetrain);
@@ -160,18 +162,20 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
-
+        joystick.a().whileTrue(
+            swerveCommands.FollowHub(
+                ()->-joystick.getLeftY() * MaxSpeed,()-> -joystick.getLeftX() * MaxSpeed));
     }
     private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
     private void IntakeBinding() {
-        joystick.a().onTrue(Commands.runOnce(()->{
-            if (LinearArmsetpoint == LinearArm.Setpoint.in) {
-                LinearArmsetpoint = LinearArm.Setpoint.out;
-            }
-            else{
-                LinearArmsetpoint = LinearArm.Setpoint.in;
-            }
-        }));
+        // joystick.a().onTrue(Commands.runOnce(()->{
+        //     if (LinearArmsetpoint == LinearArm.Setpoint.in) {
+        //         LinearArmsetpoint = LinearArm.Setpoint.out;
+        //     }
+        //     else{
+        //         LinearArmsetpoint = LinearArm.Setpoint.in;
+        //     }
+        // }));
     linear_arm.setDefaultCommand(linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
     }
     public void resetRobot(){

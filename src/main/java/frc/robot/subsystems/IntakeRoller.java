@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -13,6 +14,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -66,6 +68,7 @@ public class IntakeRoller extends SubsystemBase {
     /* controls used by the leader motors */
     private final VelocityVoltage leaderMotorSetpointRequest = new VelocityVoltage(0);
     private final CoastOut coastRequest = new CoastOut();
+    private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
     /* simulation */
     private final DCMotor dcMotor_leaderMotor = DCMotor.getKrakenX60Foc(2);
@@ -193,6 +196,19 @@ public class IntakeRoller extends SubsystemBase {
                 leaderMotorSetpointRequest.withVelocity(target.leaderMotorTarget)
             );
         });
+    }
+
+    /**
+     * Drives the intake roller with a duty cycle (-1..1) and coasts when the command ends. Added by hand; re-add it if you
+     * regenerate this file with corvus.
+     *
+     * @param output Function returning the duty cycle to apply
+     * @return Command to run
+     */
+    public Command driveDutyCycle(DoubleSupplier output) {
+        return run(() -> {
+            leaderMotor.setControl(dutyCycleRequest.withOutput(output.getAsDouble()));
+        }).finallyDo(() -> leaderMotor.setControl(coastRequest));
     }
 
     /**

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -171,6 +172,23 @@ public class Kicker extends SubsystemBase {
                 leaderMotorSetpointRequest.withVelocity(target.leaderMotorTarget)
             );
         });
+    }
+
+    /**
+     * Drives the kicker at a raw velocity in rotations per second (mechanism side) and
+     * coasts the motor when the command ends or is interrupted.
+     * Added by hand next to the generated {@link #drive(Supplier)}; re-add it if you regenerate
+     * this file with corvus.
+     *
+     * @param rps Function returning the target velocity in rotations per second
+     * @return Command to run
+     */
+    public Command drive(DoubleSupplier rps) {
+        return run(() -> {
+            leaderMotor.setControl(
+                leaderMotorSetpointRequest.withVelocity(rps.getAsDouble())
+            );
+        }).finallyDo(() -> leaderMotor.setControl(coastRequest));
     }
 
     /**

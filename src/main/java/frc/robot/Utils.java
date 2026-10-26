@@ -17,5 +17,9 @@ import frc.lib.FieldConstants;
 /** Add your docs here. */
 public class Utils {
     public static Supplier<Translation2d> hubPoseSupllier = ()-> AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint.toTranslation2d());
-    public static Function<Pose2d,Translation2d> passPose = (pose)-> pose.nearest(List.of(AllianceFlipUtil.apply(new Pose2d(10.5,5.5,Rotation2d.kZero)),AllianceFlipUtil.apply(new Pose2d(16.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero)))).getTranslation();
+    public static Function<Pose2d,Translation2d> passPose = 
+        (pose)-> pose.nearest(List.of(
+            AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)),
+            AllianceFlipUtil.apply(new Pose2d(2.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero))))
+            .getTranslation();
 }

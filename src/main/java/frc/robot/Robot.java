@@ -97,7 +97,9 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        m_robotContainer.simulationPeriodic();
+    }
 
 
     /* low heap warning: alert turns on below kLowMemFraction available, off again above kRecoverMemFraction */

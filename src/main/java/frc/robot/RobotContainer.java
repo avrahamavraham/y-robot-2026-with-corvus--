@@ -17,14 +17,21 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.Buttons.DriverButtons;
+import frc.robot.Buttons.OperatorButtons;
+import frc.robot.Commands.IntakeCommands;
+import frc.robot.Commands.ScoringCommands;
 import frc.robot.Commands.SwerveCommands;
+import frc.robot.ShootOnTheMove.SOTM;
+import frc.robot.autos.Auto1Starting;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
+import frc.robot.sim.Ps5ControllerSim;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeRoller;
@@ -46,7 +53,6 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
     //swerve and chasis 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final AutoFactory autoFactory = new AutoFactory(
@@ -60,6 +66,22 @@ public class RobotContainer {
     public final Indexer indexer = new Indexer();
     public final Kicker kicker = new Kicker();
     public final  Vision vision;
+
+    //commands (ported from robot2026Catalyst)
+    public final SwerveCommands swerveCommands = new SwerveCommands(drivetrain);
+    /** Builds the shot lookup table here, at startup, never during a match. */
+    public final SOTM sotm = new SOTM(drivetrain);
+    public final IntakeCommands intakeCommands = new IntakeCommands(linear_arm, intakeRoller);
+    public final ScoringCommands scoringCommands =
+        new ScoringCommands(shooter, kicker, indexer, drivetrain, swerveCommands, sotm);
+    private final Auto1Starting auto1Starting = new Auto1Starting(autoFactory, drivetrain);
+
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+    //simulated PS5 controllers (only do anything when ticked in the dashboard, see Ps5ControllerSim)
+    private final Ps5ControllerSim driverSim = new Ps5ControllerSim(Controllers.kDriverPort, "Sim/Driver");
+    private final Ps5ControllerSim operatorSim = new Ps5ControllerSim(Controllers.kOperatorPort, "Sim/Operator");
+
     public RobotContainer() {
         if (Robot.isReal()) {
             vision = new Vision(drivetrain, 
@@ -72,25 +94,53 @@ public class RobotContainer {
             );
         }
         configureBindings();
+        configureAutos();
     }
 
     private void configureBindings() {
-        //Swerve
-        SwerveBinding();
-        //Intake
-        IntakeBinding();
-        //shoter
-        ShooterBinding();
-                
+        drivetrain.register();
+        drivetrain.registerTelemetry(logger::telemeterize);
+
+        var driver = Controllers.getSwerveController();
+        var operator = Controllers.getOPController();
+
+        // Swerve: sticks, heading reset, place speed, pass aiming
+        DriverButtons.bind(driver, drivetrain, swerveCommands, scoringCommands, drive, MaxSpeed, MaxAngularRate);
+
+        // Shooter + intake on the operator controller. While aiming (R2) the driver stick still translates.
+        OperatorButtons.bind(operator, scoringCommands, intakeCommands,
+            () -> -driver.getLeftY() * MaxSpeed,
+            () -> -driver.getLeftX() * MaxSpeed);
+
+        // Rollers start when the arm reaches open and stop when it reaches closed (as in Catalyst).
+        intakeCommands.bindRollersToArm();
+
+        // The intake commands finish at their target, so the arm must hold where they leave it.
+        linear_arm.setDefaultCommand(linear_arm.holdPosition());
+    }
+
+    private void configureAutos() {
+        autoChooser.setDefaultOption("Drive to points", simpleAuto());
+        autoChooser.addOption("Auto 1 (Catalyst)", auto1Starting.auto1());
+        autoChooser.addOption("Nothing", Commands.none());
+        SmartDashboard.putData("Auto chooser", autoChooser);
     }
 
     public void Periodic(){
         vision.periodic();
     }
-                
-        
+
+    /** Call from Robot.simulationPeriodic(). */
+    public void simulationPeriodic(){
+        driverSim.periodic();
+        operatorSim.periodic();
+    }
 
     public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
+    }
+
+    private Command simpleAuto() {
         // Simple drive forward auton
         final var idle = new SwerveRequest.Idle();
         return Commands.sequence(
@@ -108,76 +158,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle)
         );
     }
-    private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
-    private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
-    private Indexer.Setpoint indexerSetpoint = Indexer.Setpoint.stop;
-    private void ShooterBinding() {
-        joystick.b().onTrue(Commands.runOnce(()->{
-            System.out.println("check");
-            if (shooterSetpoint == Shooter.Setpoint.Near) {
-                shooterSetpoint = Shooter.Setpoint.Far;
-            }
-            else{
-                shooterSetpoint = Shooter.Setpoint.Near;
-            }
-        }));
-        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
-        shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
-            indexerSetpoint = Indexer.Setpoint.index;
-        })).onFalse(Commands.runOnce(()->{
-            indexerSetpoint = Indexer.Setpoint.stop;
-        }));
-        indexer.setDefaultCommand(indexer.drive(()->{return indexerSetpoint;}));
-        indexer.createIsNearTargetTrigger(RotationsPerSecond.of(1)).onTrue(Commands.runOnce(()->{
-            kickerSetpoint = Kicker.Setpoint.kicking;
-        })).onFalse(Commands.runOnce(()->{
-            kickerSetpoint = Kicker.Setpoint.stop;
-        }));
-        kicker.setDefaultCommand(kicker.drive(()->{return kickerSetpoint;}));
-    }
 
-
-    private void SwerveBinding(){
-        SwerveCommands swerveCommands = new SwerveCommands(drivetrain);
-        drivetrain.register();
-        //pathPlanner
-        // PathPlannerOptional.configureAutoBuilder(drivetrain);
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
-        // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-        drivetrain.registerTelemetry(logger::telemeterize);
-        joystick.a().whileTrue(
-            swerveCommands.FollowPass(
-                ()->-joystick.getLeftY() * MaxSpeed,()-> -joystick.getLeftX() * MaxSpeed));
-    }
-    private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
-    private void IntakeBinding() {
-        // joystick.a().onTrue(Commands.runOnce(()->{
-        //     if (LinearArmsetpoint == LinearArm.Setpoint.in) {
-        //         LinearArmsetpoint = LinearArm.Setpoint.out;
-        //     }
-        //     else{
-        //         LinearArmsetpoint = LinearArm.Setpoint.in;
-        //     }
-        // }));
-    linear_arm.setDefaultCommand(linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
-    }
     public void resetRobot(){
         System.out.println(DriverStation.isDisabled());
         CommandScheduler.getInstance().schedule(

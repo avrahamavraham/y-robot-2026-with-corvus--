@@ -163,7 +163,7 @@ public class RobotContainer {
 
         drivetrain.registerTelemetry(logger::telemeterize);
         joystick.a().whileTrue(
-            swerveCommands.FollowHub(
+            swerveCommands.FollowPass(
                 ()->-joystick.getLeftY() * MaxSpeed,()-> -joystick.getLeftX() * MaxSpeed));
     }
     private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
@@ -181,10 +181,12 @@ public class RobotContainer {
     public void resetRobot(){
         System.out.println(DriverStation.isDisabled());
         CommandScheduler.getInstance().schedule(
+            Commands.parallel(            
             linear_arm.calibrateZero(),
             shooter.coast(),
             intakeRoller.coast(),
-            drivetrain.applyRequest(()->new SwerveRequest.Idle()).withTimeout(1)
+            drivetrain.applyRequest(()->new SwerveRequest.Idle()).withTimeout(1))
+            .withTimeout(4)
             );
     }
 }

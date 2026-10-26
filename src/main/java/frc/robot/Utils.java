@@ -4,8 +4,12 @@
 
 package frc.robot;
 
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.FieldConstants;
@@ -13,4 +17,5 @@ import frc.lib.FieldConstants;
 /** Add your docs here. */
 public class Utils {
     public static Supplier<Translation2d> hubPoseSupllier = ()-> AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint.toTranslation2d());
+    public static Function<Pose2d,Translation2d> passPose = (pose)-> pose.nearest(List.of(AllianceFlipUtil.apply(new Pose2d(10.5,5.5,Rotation2d.kZero)),AllianceFlipUtil.apply(new Pose2d(16.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero)))).getTranslation();
 }

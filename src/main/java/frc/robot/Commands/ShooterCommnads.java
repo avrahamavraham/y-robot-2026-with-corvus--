@@ -4,11 +4,8 @@
 
 package frc.robot.Commands;
 
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.AllianceFlipUtil;
-import frc.lib.FieldConstants;
 import frc.robot.Utils;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
@@ -17,6 +14,7 @@ import frc.robot.subsystems.Shooter;
 public class ShooterCommnads {
     private final Shooter shooter;
     private final CommandSwerveDrivetrain swerveDrivetrain;
+    
     private final InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
     public ShooterCommnads(Shooter shooter,CommandSwerveDrivetrain drivetrain){
         this.shooter = shooter;
@@ -25,5 +23,8 @@ public class ShooterCommnads {
     }
     public Command ShotAtHub(){
         return shooter.drive(()->rpmMap.get(swerveDrivetrain.getState().Pose.getTranslation().getDistance(Utils.hubPoseSupllier.get())));
+    }
+    public Command Pass(){
+        return shooter.drive(()->rpmMap.get(swerveDrivetrain.getState().Pose.getTranslation().getDistance(Utils.passPose.apply(swerveDrivetrain.getState().Pose))));
     }
 }

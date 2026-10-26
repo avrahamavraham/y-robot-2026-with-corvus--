@@ -24,6 +24,9 @@ public class ShooterCommnads {
     public Command ShotAtHub(){
         return shooter.drive(()->rpmMap.get(swerveDrivetrain.getState().Pose.getTranslation().getDistance(Utils.hubPoseSupllier.get())));
     }
+    public Command ShotAtHubFromPlace(){
+        return shooter.drive(()->rpmMap.get(1.5));
+    }
     public Command Pass(){
         return shooter.drive(()->rpmMap.get(swerveDrivetrain.getState().Pose.getTranslation().getDistance(Utils.passPose.apply(swerveDrivetrain.getState().Pose))));
     }

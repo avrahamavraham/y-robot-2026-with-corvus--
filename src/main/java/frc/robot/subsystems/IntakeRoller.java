@@ -38,9 +38,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class IntakeRoller extends SubsystemBase {
     /** Velocity setpoints for the intake roller. */
     public enum Setpoint {
-        Near(RotationsPerSecond.of(10)),
-        Mid(RotationsPerSecond.of(25)),
-        Far(RotationsPerSecond.of(40));
+        Stop(RotationsPerSecond.of(0)),
+        Run(RotationsPerSecond.of(80/kGearRatio));
+
 
         /** The leaderMotor velocity target of the setpoint. */
         public final AngularVelocity leaderMotorTarget;

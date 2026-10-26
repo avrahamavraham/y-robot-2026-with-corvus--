@@ -4,6 +4,7 @@
 
 package frc.robot.Commands;
 
+import java.lang.annotation.Retention;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -25,18 +26,19 @@ public class SwerveCommands {
     public SwerveCommands(CommandSwerveDrivetrain drivetrain){
         this.drivetrain = drivetrain;
     }
-    public Command FollowHub(DoubleSupplier xAxis,DoubleSupplier yAxis){
+    public Command FollowHub(){
         return drivetrain.applyRequest(()->{
-            return followAngle.withVelocityX(xAxis.getAsDouble()).withVelocityY(yAxis.getAsDouble())
-            .withTargetDirection(
+            return followAngle.withTargetDirection(
                 drivetrain.getState().Pose.getTranslation().minus(Utils.hubPoseSupllier.get())
                 .getAngle().plus(Rotation2d.k180deg));
-        });
+        }).until(()->{
+            return drivetrain.getState().Pose.getTranslation().minus(Utils.hubPoseSupllier.get()).getAngle().minus(drivetrain.getState().Pose.getRotation()).plus(Rotation2d.k180deg).getDegrees() < 4;
+        }).andThen(drivetrain.applyRequest(SwerveRequest.SwerveDriveBrake::new));
     }
     public Command FollowPass(DoubleSupplier xAxis,DoubleSupplier yAxis){
         return drivetrain.applyRequest(()->{
             return followAngle.withVelocityX(xAxis.getAsDouble()).withVelocityY(yAxis.getAsDouble())
-            .withTargetDirection(drivetrain.getState().Pose.getTranslation().minus(Utils.passPose.apply(drivetrain.getState().Pose)).getAngle());
+            .withTargetDirection(drivetrain.getState().Pose.getTranslation().minus(Utils.passPose.apply(drivetrain.getState().Pose)).getAngle().plus(Rotation2d.k180deg));
         });
-    }
+        }
 }

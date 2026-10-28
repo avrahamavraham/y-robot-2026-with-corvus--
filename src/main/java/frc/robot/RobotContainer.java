@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Commands.SwerveCommands;
 import frc.robot.autos.AutoFactory;
@@ -45,8 +44,6 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
-
-    private final CommandXboxController joystick = new CommandXboxController(0);
     //swerve and chasis 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final AutoFactory autoFactory = new AutoFactory(
@@ -112,7 +109,7 @@ public class RobotContainer {
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
     private Indexer.Setpoint indexerSetpoint = Indexer.Setpoint.stop;
     private void ShooterBinding() {
-        joystick.b().onTrue(Commands.runOnce(()->{
+        Controllers.driveController.L1().onTrue(Commands.runOnce(()->{
             System.out.println("check");
             if (shooterSetpoint == Shooter.Setpoint.Near) {
                 shooterSetpoint = Shooter.Setpoint.Far;
@@ -147,9 +144,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-Controllers.driveController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-Controllers.driveController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-Controllers.driveController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
         // Idle while the robot is disabled. This ensures the configured
@@ -159,12 +156,12 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        Controllers.driveController.touchpad().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
-        joystick.a().whileTrue(
+        Controllers.driveController.triangle().whileTrue(
             swerveCommands.FollowPass(
-                ()->-joystick.getLeftY() * MaxSpeed,()-> -joystick.getLeftX() * MaxSpeed));
+                ()->-Controllers.driveController.getLeftY() * MaxSpeed,()-> -Controllers.driveController.getLeftX() * MaxSpeed));
     }
     private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
     private void IntakeBinding() {

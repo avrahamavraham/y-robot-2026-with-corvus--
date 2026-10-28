@@ -97,7 +97,9 @@ public class Robot extends TimedRobot {
     public void testExit() {}
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        Controllers.simulationPeriodic();
+    }
 
 
     /* low heap warning: alert turns on below kLowMemFraction available, off again above kRecoverMemFraction */
@@ -131,5 +133,12 @@ public class Robot extends TimedRobot {
         } else if (fraction > kRecoverMemFraction) {
             m_lowMemoryAlert.set(false);
         }
+    }
+
+    @Override
+    public void simulationInit() {
+        Controllers.SimInit(0);
+        Controllers.SimInit(1);
+        Controllers.bindXboxToPS5Sim();
     }
 }

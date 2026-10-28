@@ -52,8 +52,14 @@ public class Vision {
           new Alert(
               "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
     }
-      autoReplay.withStructArray("VisionInputs", VisionIO.VisionIOInputs.struct, 
-      ()->inputs, (inputs)->this.inputs = inputs.value);
+    for (int index = 0; index < ios.length; index++) {
+      int i = index;
+      autoReplay.withStruct("VisionInputs/" + i, 
+        new VisionIO.VisionIOInputs.VisionIOInputsStruct(
+          ()-> inputs[i].poseObservations.size(), ()->inputs[i].tagIds.size()), 
+          ()-> inputs[i], 
+          (input)-> inputs[i] = input.value);
+    }
   }
   /** call from robot periodic */
   public void periodic() {

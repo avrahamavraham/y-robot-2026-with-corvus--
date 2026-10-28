@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntSupplier;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,11 +15,6 @@ public interface VisionIO {
     public double getStdDevFactors();
 
     public class VisionIOInputs {
-        // Struct arrays are fixed-size: anything past these limits is dropped when logging.
-        public static final int MAX_POSE_OBSERVATIONS = 8;
-        public static final int MAX_TAG_IDS = 16;
-
-        public static final VisionIOInputsStruct struct = new VisionIOInputsStruct();
 
         public boolean connected = false;
         public TargetObservation latestTargetObservation =
@@ -29,9 +25,15 @@ public interface VisionIO {
         public VisionIOInputs() {}
 
         public static class VisionIOInputsStruct implements Struct<VisionIOInputs> {
+            // Struct arrays are fixed-size: anything past these limits is dropped when logging.
+            public IntSupplier poseObservationsAmount = ()-> 8;
+            public IntSupplier tagIsAmount = ()-> 16;
             private static final PoseObservation EMPTY_POSE_OBSERVATION =
                 new PoseObservation(0.0, Pose3d.kZero, 0.0, 0, 0.0, PoseObservationType.MEGATAG_1);
-
+            public VisionIOInputsStruct(IntSupplier poseObservationsAmount,IntSupplier tagIsAmount){
+                this.poseObservationsAmount = poseObservationsAmount;
+                this.tagIsAmount = tagIsAmount;
+            }
             @Override
             public Class<VisionIOInputs> getTypeClass() {
                 return VisionIOInputs.class;
@@ -48,9 +50,9 @@ public interface VisionIO {
                     + Rotation2d.struct.getSize()                         // latestTargetObservation.tx
                     + Rotation2d.struct.getSize()                         // latestTargetObservation.ty
                     + kSizeInt8                                           // valid poseObservations count
-                    + MAX_POSE_OBSERVATIONS * PoseObservation.struct.getSize()
+                    + poseObservationsAmount.getAsInt() * PoseObservation.struct.getSize()
                     + kSizeInt8                                           // valid tagIds count
-                    + MAX_TAG_IDS * kSizeInt32;                           // tagIds
+                    + tagIsAmount.getAsInt() * kSizeInt32;                           // tagIds
             }
 
             @Override
@@ -59,9 +61,9 @@ public interface VisionIO {
                     + "Rotation2d tx;"
                     + "Rotation2d ty;"
                     + "int8 poseCount;"
-                    + "PoseObservation poses[" + MAX_POSE_OBSERVATIONS + "];"
+                    + "PoseObservation poses[" + poseObservationsAmount + "];"
                     + "int8 tagCount;"
-                    + "int32 tagIds[" + MAX_TAG_IDS + "]";
+                    + "int32 tagIds[" + tagIsAmount + "]";
             }
 
             @Override
@@ -79,19 +81,19 @@ public interface VisionIO {
                 Rotation2d ty = Rotation2d.struct.unpack(bb);
                 inputs.latestTargetObservation = new TargetObservation(tx, ty);
 
-                int poseCount = Math.min(bb.get(), MAX_POSE_OBSERVATIONS);
+                int poseCount = Math.min(bb.get(), poseObservationsAmount.getAsInt());
                 inputs.poseObservations = new ArrayList<>(poseCount);
                 // Always consume every slot so the buffer position stays correct
-                for (int i = 0; i < MAX_POSE_OBSERVATIONS; i++) {
+                for (int i = 0; i < poseObservationsAmount.getAsInt(); i++) {
                     PoseObservation obs = PoseObservation.struct.unpack(bb);
                     if (i < poseCount) {
                         inputs.poseObservations.add(obs);
                     }
                 }
 
-                int tagCount = Math.min(bb.get(), MAX_TAG_IDS);
+                int tagCount = Math.min(bb.get(), tagIsAmount.getAsInt());
                 inputs.tagIds = new ArrayList<>(tagCount);
-                for (int i = 0; i < MAX_TAG_IDS; i++) {
+                for (int i = 0; i < tagIsAmount.getAsInt(); i++) {
                     int id = bb.getInt();
                     if (i < tagCount) {
                         inputs.tagIds.add(id);
@@ -108,17 +110,17 @@ public interface VisionIO {
                 Rotation2d.struct.pack(bb, value.latestTargetObservation.tx());
                 Rotation2d.struct.pack(bb, value.latestTargetObservation.ty());
 
-                int poseCount = Math.min(value.poseObservations.size(), MAX_POSE_OBSERVATIONS);
+                int poseCount = Math.min(value.poseObservations.size(), poseObservationsAmount.getAsInt());
                 bb.put((byte) poseCount);
                 // Always write every slot (padding with empties) so size is constant
-                for (int i = 0; i < MAX_POSE_OBSERVATIONS; i++) {
+                for (int i = 0; i < poseObservationsAmount.getAsInt(); i++) {
                     PoseObservation.struct.pack(
                         bb, i < poseCount ? value.poseObservations.get(i) : EMPTY_POSE_OBSERVATION);
                 }
 
-                int tagCount = Math.min(value.tagIds.size(), MAX_TAG_IDS);
+                int tagCount = Math.min(value.tagIds.size(), tagIsAmount.getAsInt());
                 bb.put((byte) tagCount);
-                for (int i = 0; i < MAX_TAG_IDS; i++) {
+                for (int i = 0; i < tagIsAmount.getAsInt(); i++) {
                     bb.putInt(i < tagCount ? value.tagIds.get(i) : 0);
                 }
             }

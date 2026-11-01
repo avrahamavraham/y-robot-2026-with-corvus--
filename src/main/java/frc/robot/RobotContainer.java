@@ -13,28 +13,21 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Commands.SwerveCommands;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeRoller;
 import frc.robot.subsystems.Kicker;
 import frc.robot.subsystems.LinearArm;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIOLimelight;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -48,31 +41,15 @@ public class RobotContainer {
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    //swerve and chasis 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    //subsystems
+    public final Subsystems subsystems = new Subsystems();
     public final AutoFactory autoFactory = new AutoFactory(
         new PIDController(2.3, 0, 0),
         new PIDController(2.3, 0, 0),
-        drivetrain);
+        subsystems.drivetrain);
     public FollowPath.Builder pathBuilder;
-    //subsystems
-    public final LinearArm linear_arm = new LinearArm();
-    public final Shooter shooter = new Shooter();
-    public final IntakeRoller intakeRoller = new IntakeRoller();
-    public final Indexer indexer = new Indexer();
-    public final Kicker kicker = new Kicker();
-    public final  Vision vision;
+
     public RobotContainer() {
-        if (Robot.isReal()) {
-            vision = new Vision(drivetrain, 
-            new VisionIOLimelight("limelight-gg", ()->drivetrain.getState().Pose.getRotation(), 0.2));
-        } else {
-            vision = new Vision(drivetrain,
-            new VisionIOPhotonVisionSim("limelight-gg", 
-                new Transform3d(-0.1808, -0.023073, 0.44788, new Rotation3d(0,0,Math.PI)), 
-                ()->drivetrain.getState().Pose, 0.2)            
-            );
-        }
         configureBindings();
     }
 
@@ -87,7 +64,7 @@ public class RobotContainer {
     }
 
     public void Periodic(){
-        vision.periodic();
+        subsystems.vision.periodic();
     }
                 
         
@@ -108,30 +85,29 @@ public class RobotContainer {
                 shooterSetpoint = Shooter.Setpoint.Near;
             }
         }));
-        shooter.setDefaultCommand(shooter.drive(()->{return shooterSetpoint;}));
-        shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
+        subsystems.shooter.setDefaultCommand(subsystems.shooter.drive(()->{return shooterSetpoint;}));
+        subsystems.shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.index;
         })).onFalse(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.stop;
         }));
-        indexer.setDefaultCommand(indexer.drive(()->{return indexerSetpoint;}));
-        indexer.createIsNearTargetTrigger(RotationsPerSecond.of(1)).onTrue(Commands.runOnce(()->{
+        subsystems.indexer.setDefaultCommand(subsystems.indexer.drive(()->{return indexerSetpoint;}));
+        subsystems.indexer.createIsNearTargetTrigger(RotationsPerSecond.of(1)).onTrue(Commands.runOnce(()->{
             kickerSetpoint = Kicker.Setpoint.kicking;
         })).onFalse(Commands.runOnce(()->{
             kickerSetpoint = Kicker.Setpoint.stop;
         }));
-        kicker.setDefaultCommand(kicker.drive(()->{return kickerSetpoint;}));
+        subsystems.kicker.setDefaultCommand(subsystems.kicker.drive(()->{return kickerSetpoint;}));
     }
 
 
     private void SwerveBinding(){
-        SwerveCommands swerveCommands = new SwerveCommands(drivetrain);
-        drivetrain.register();
+        subsystems.drivetrain.register();
 
         pathBuilder = new FollowPath.Builder(
-            drivetrain, ()-> drivetrain.getState().Pose, 
-            ()->drivetrain.getState().Speeds, (speeds)->{
-                drivetrain.setControl(
+            subsystems.drivetrain, ()-> subsystems.drivetrain.getState().Pose, 
+            ()->subsystems.drivetrain.getState().Speeds, (speeds)->{
+                subsystems.drivetrain.setControl(
                     driveRobotCentric.withVelocityX(speeds.vxMetersPerSecond + Controllers.driveController.getLeftY())
                     .withVelocityY(speeds.vyMetersPerSecond + Controllers.driveController.getLeftX())
                     .withRotationalRate(speeds.omegaRadiansPerSecond));
@@ -139,13 +115,13 @@ public class RobotContainer {
             new PIDController(2.3, 0, 0), 
             new PIDController(2.3, 0, 0), 
             new PIDController(0.2, 0, 0))
-            .withDefaultShouldFlip().withPoseReset(drivetrain::resetPose)
+            .withDefaultShouldFlip().withPoseReset(subsystems.drivetrain::resetPose)
             .withTRatioBasedTranslationHandoffs(true);
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
+        subsystems.drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
+            subsystems.drivetrain.applyRequest(() ->
                 drive.withVelocityX(-Controllers.driveController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-Controllers.driveController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-Controllers.driveController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
@@ -155,15 +131,12 @@ public class RobotContainer {
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+            subsystems.drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
         // Reset the field-centric heading on left bumper press.
-        Controllers.driveController.touchpad().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        Controllers.driveController.touchpad().onTrue(subsystems.drivetrain.runOnce(subsystems.drivetrain::seedFieldCentric));
 
-        drivetrain.registerTelemetry(logger::telemeterize);
-        Controllers.driveController.triangle().whileTrue(
-            swerveCommands.FollowPass(
-                ()->-Controllers.driveController.getLeftY() * MaxSpeed,()-> -Controllers.driveController.getLeftX() * MaxSpeed));
+        subsystems.drivetrain.registerTelemetry(logger::telemeterize);
     }
     private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
     private void IntakeBinding() {
@@ -175,20 +148,20 @@ public class RobotContainer {
         //         LinearArmsetpoint = LinearArm.Setpoint.in;
         //     }
         // }));
-    linear_arm.setDefaultCommand(linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
-    new Trigger(()->linear_arm.getPosition()
+    subsystems.linear_arm.setDefaultCommand(subsystems.linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
+    new Trigger(()->subsystems.linear_arm.getPosition()
         .isNear(LinearArm.Setpoint.out.target, Degree.of(2)))
-            .onTrue(intakeRoller.drive(()->IntakeRoller.Setpoint.Run))
-            .onFalse(intakeRoller.drive(()->IntakeRoller.Setpoint.Stop));
+            .onTrue(subsystems.intakeRoller.drive(()->IntakeRoller.Setpoint.Run))
+            .onFalse(subsystems.intakeRoller.drive(()->IntakeRoller.Setpoint.Stop));
     }
     public void resetRobot(){
         System.out.println(DriverStation.isDisabled());
         CommandScheduler.getInstance().schedule(
             Commands.parallel(            
-            linear_arm.calibrateZero(),
-            shooter.coast(),
-            intakeRoller.coast(),
-            drivetrain.applyRequest(()->new SwerveRequest.Idle()).withTimeout(1))
+            subsystems.linear_arm.calibrateZero(),
+            subsystems.shooter.coast(),
+            subsystems.intakeRoller.coast(),
+            subsystems.drivetrain.applyRequest(()->new SwerveRequest.Idle()).withTimeout(1))
             .withTimeout(4)
             );
     }

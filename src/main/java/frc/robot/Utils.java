@@ -20,6 +20,5 @@ public class Utils {
     public static Function<Pose2d,Translation2d> passPose = 
         (pose)-> pose.nearest(List.of(
             AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)),
-            AllianceFlipUtil.apply(new Pose2d(2.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero))))
-            .getTranslation();
+            AllianceFlipUtil.apply(new Pose2d(2.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero)))).getTranslation();
 }

@@ -55,8 +55,7 @@ public class Vision {
     for (int index = 0; index < ios.length; index++) {
       int i = index;
       autoReplay.withStruct("VisionInputs/" + i, 
-        new VisionIO.VisionIOInputs.VisionIOInputsStruct(
-          ()-> inputs[i].poseObservations.size(), ()->inputs[i].tagIds.size()), 
+        VisionIO.VisionIOInputs.struct, 
           ()-> inputs[i], 
           (input)-> inputs[i] = input.value);
     }

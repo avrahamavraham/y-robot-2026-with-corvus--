@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -12,8 +13,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,9 +20,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.SwerveCommands;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.BLine.FollowPath;
+import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeRoller;
@@ -42,7 +44,9 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-
+    private final SwerveRequest.RobotCentric driveRobotCentric = new SwerveRequest.RobotCentric()
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final Telemetry logger = new Telemetry(MaxSpeed);
     //swerve and chasis 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -50,6 +54,7 @@ public class RobotContainer {
         new PIDController(2.3, 0, 0),
         new PIDController(2.3, 0, 0),
         drivetrain);
+    public FollowPath.Builder pathBuilder;
     //subsystems
     public final LinearArm linear_arm = new LinearArm();
     public final Shooter shooter = new Shooter();
@@ -88,22 +93,7 @@ public class RobotContainer {
         
 
     public Command getAutonomousCommand() {
-        // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-        
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            Commands.waitSeconds(1),
-            autoFactory.driveToPoint(
-                new Pose2d(2, 2, Rotation2d.fromDegrees(40)),
-                new Pose2d(6,6,Rotation2d.fromDegrees(260)),
-                new Pose2d()
-                ),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+        return pathBuilder.build(new Path("Auto1"));
     }
     private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
@@ -137,8 +127,20 @@ public class RobotContainer {
     private void SwerveBinding(){
         SwerveCommands swerveCommands = new SwerveCommands(drivetrain);
         drivetrain.register();
-        //pathPlanner
-        // PathPlannerOptional.configureAutoBuilder(drivetrain);
+
+        pathBuilder = new FollowPath.Builder(
+            drivetrain, ()-> drivetrain.getState().Pose, 
+            ()->drivetrain.getState().Speeds, (speeds)->{
+                drivetrain.setControl(
+                    driveRobotCentric.withVelocityX(speeds.vxMetersPerSecond + Controllers.driveController.getLeftY())
+                    .withVelocityY(speeds.vyMetersPerSecond + Controllers.driveController.getLeftX())
+                    .withRotationalRate(speeds.omegaRadiansPerSecond));
+            }, 
+            new PIDController(2.3, 0, 0), 
+            new PIDController(2.3, 0, 0), 
+            new PIDController(0.2, 0, 0))
+            .withDefaultShouldFlip().withPoseReset(drivetrain::resetPose)
+            .withTRatioBasedTranslationHandoffs(true);
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -174,6 +176,10 @@ public class RobotContainer {
         //     }
         // }));
     linear_arm.setDefaultCommand(linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
+    new Trigger(()->linear_arm.getPosition()
+        .isNear(LinearArm.Setpoint.out.target, Degree.of(2)))
+            .onTrue(intakeRoller.drive(()->IntakeRoller.Setpoint.Run))
+            .onFalse(intakeRoller.drive(()->IntakeRoller.Setpoint.Stop));
     }
     public void resetRobot(){
         System.out.println(DriverStation.isDisabled());

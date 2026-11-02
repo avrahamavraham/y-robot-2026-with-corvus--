@@ -8,17 +8,19 @@ import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Commands.CommandCollction;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
@@ -32,7 +34,7 @@ import frc.robot.subsystems.Shooter;
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
+    private SendableChooser<Command> autoChooser = new SendableChooser<>();
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -48,9 +50,31 @@ public class RobotContainer {
         new PIDController(2.3, 0, 0),
         subsystems.drivetrain);
     public FollowPath.Builder pathBuilder;
+    public FollowPath.Builder FirstpathBuilder;
+
+    //Commands
+    public CommandCollction commandCollction = new CommandCollction(subsystems);
 
     public RobotContainer() {
         configureBindings();
+        Utils.init(subsystems);
+        InitAutoChosser();
+    }
+
+    private void InitAutoChosser(){
+        
+        autoChooser.addOption("Auto1", FirstpathBuilder.build(new Path("path1"))
+        .andThen(commandCollction.FullShotAuto())
+        .andThen(pathBuilder.build(new Path("path2")))
+        .andThen(commandCollction.FullShot()));
+        autoChooser.addOption("Auto2",FirstpathBuilder.withShouldMirror(()-> true).build(new Path("path1"))        
+        .andThen(commandCollction.FullShotAuto())
+        .andThen(pathBuilder.withShouldMirror(()-> true).build(new Path("path2")))
+        .andThen(commandCollction.FullShot()));
+        FirstpathBuilder.withShouldMirror(()-> false);
+        pathBuilder.withShouldMirror(()-> false);
+        autoChooser.setDefaultOption("none", Commands.print("None"));
+        SmartDashboard.putData("AutoChooser", autoChooser);
     }
 
     private void configureBindings() {
@@ -70,7 +94,7 @@ public class RobotContainer {
         
 
     public Command getAutonomousCommand() {
-        return pathBuilder.build(new Path("Auto1"));
+        return autoChooser.getSelected();
     }
     private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
@@ -115,8 +139,19 @@ public class RobotContainer {
             new PIDController(2.3, 0, 0), 
             new PIDController(2.3, 0, 0), 
             new PIDController(0.2, 0, 0))
-            .withDefaultShouldFlip().withPoseReset(subsystems.drivetrain::resetPose)
-            .withTRatioBasedTranslationHandoffs(true);
+            .withDefaultShouldFlip();
+        FirstpathBuilder = new FollowPath.Builder(
+            subsystems.drivetrain, ()-> subsystems.drivetrain.getState().Pose, 
+            ()->subsystems.drivetrain.getState().Speeds, (speeds)->{
+                subsystems.drivetrain.setControl(
+                    driveRobotCentric.withVelocityX(speeds.vxMetersPerSecond + Controllers.driveController.getLeftY())
+                    .withVelocityY(speeds.vyMetersPerSecond + Controllers.driveController.getLeftX())
+                    .withRotationalRate(speeds.omegaRadiansPerSecond));
+            }, 
+            new PIDController(2.3, 0, 0), 
+            new PIDController(2.3, 0, 0), 
+            new PIDController(0.2, 0, 0))
+            .withDefaultShouldFlip().withPoseReset(subsystems.drivetrain::resetPose);
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         subsystems.drivetrain.setDefaultCommand(

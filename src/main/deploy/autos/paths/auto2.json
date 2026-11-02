@@ -31,13 +31,21 @@
       "intermediate_handoff_radius_meters": 0.45
     },
     {
+      "type": "rotation",
+      "rotation_radians": 1.61185,
+      "t_ratio": 0.78207,
+      "profiled_rotation": true
+    },
+    {
       "type": "translation",
+      "handoff_mode": "progress",
       "x_meters": 7.79294,
       "y_meters": 3.88435,
       "intermediate_handoff_radius_meters": 0.45
     },
     {
       "type": "translation",
+      "handoff_mode": "radius",
       "x_meters": 5.65514,
       "y_meters": 2.69349,
       "intermediate_handoff_radius_meters": 0.2
@@ -58,8 +66,60 @@
         "rotation_radians": -2.37643,
         "profiled_rotation": true
       }
+    },
+    {
+      "type": "rotation",
+      "rotation_radians": 1.55813,
+      "t_ratio": 0.86165,
+      "profiled_rotation": true
+    },
+    {
+      "type": "translation",
+      "x_meters": 6.32453,
+      "y_meters": 2.15107,
+      "intermediate_handoff_radius_meters": 0.675,
+      "handoff_radius_source": "auto"
+    },
+    {
+      "type": "rotation",
+      "rotation_radians": 1.54947,
+      "t_ratio": 0.85477,
+      "profiled_rotation": true
+    },
+    {
+      "type": "translation",
+      "handoff_mode": "progress",
+      "x_meters": 6.25615,
+      "y_meters": 4.22989,
+      "intermediate_handoff_radius_meters": 0.45
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.64071,
+      "y_meters": 2.39725,
+      "intermediate_handoff_radius_meters": 0.543,
+      "handoff_radius_source": "auto"
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 1.0,
+      "lib_key": "shot"
+    },
+    {
+      "type": "waypoint",
+      "translation_target": {
+        "x_meters": 3.26101,
+        "y_meters": 2.4246,
+        "intermediate_handoff_radius_meters": 0.45,
+        "handoff_radius_source": "auto"
+      },
+      "rotation_target": {
+        "rotation_radians": -2.37643,
+        "profiled_rotation": true
+      }
     }
   ],
+  "tank_drive_direction": "forward",
   "constraints": {
     "max_velocity_meters_per_sec": [
       {
@@ -88,9 +148,34 @@
         "end_ordinal": 4
       },
       {
-        "value": 5.56,
+        "value": 3.38,
         "start_ordinal": 5,
-        "end_ordinal": 5
+        "end_ordinal": 5,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 3.03,
+        "start_ordinal": 6,
+        "end_ordinal": 6,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 2.0,
+        "start_ordinal": 7,
+        "end_ordinal": 7,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 2.47,
+        "start_ordinal": 8,
+        "end_ordinal": 8,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 3.99,
+        "start_ordinal": 9,
+        "end_ordinal": 9,
+        "source": "auto_velocity"
       }
     ],
     "min_velocity_meters_per_sec": [

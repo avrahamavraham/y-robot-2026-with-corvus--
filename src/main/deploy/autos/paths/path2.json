@@ -1,0 +1,90 @@
+{
+  "path_elements": [
+    {
+      "type": "waypoint",
+      "translation_target": {
+        "x_meters": 3.04109,
+        "y_meters": 5.39619,
+        "intermediate_handoff_radius_meters": 0.45,
+        "handoff_radius_source": "auto"
+      },
+      "rotation_target": {
+        "rotation_radians": 2.47732,
+        "profiled_rotation": true
+      }
+    },
+    {
+      "type": "rotation",
+      "rotation_radians": -1.57618,
+      "t_ratio": 0.8264,
+      "profiled_rotation": true
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.96894,
+      "y_meters": 5.43341,
+      "intermediate_handoff_radius_meters": 0.4
+    },
+    {
+      "type": "rotation",
+      "rotation_radians": -1.545,
+      "t_ratio": 0.75885,
+      "profiled_rotation": true
+    },
+    {
+      "type": "translation",
+      "handoff_mode": "progress",
+      "x_meters": 5.95527,
+      "y_meters": 3.76489,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.97796,
+      "y_meters": 5.41697,
+      "intermediate_handoff_radius_meters": 0.3
+    },
+    {
+      "type": "waypoint",
+      "translation_target": {
+        "x_meters": 3.05587,
+        "y_meters": 5.28297,
+        "intermediate_handoff_radius_meters": 0.45,
+        "handoff_radius_source": "auto"
+      },
+      "rotation_target": {
+        "rotation_radians": 2.22443,
+        "profiled_rotation": true
+      }
+    }
+  ],
+  "tank_drive_direction": "forward",
+  "constraints": {
+    "max_velocity_meters_per_sec": [
+      {
+        "value": 3.09,
+        "start_ordinal": 0,
+        "end_ordinal": 0,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 2.48,
+        "start_ordinal": 1,
+        "end_ordinal": 1,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 1.8,
+        "start_ordinal": 2,
+        "end_ordinal": 2,
+        "source": "auto_velocity"
+      },
+      {
+        "value": 2.13,
+        "start_ordinal": 3,
+        "end_ordinal": 4,
+        "source": "auto_velocity"
+      }
+    ]
+  }
+}

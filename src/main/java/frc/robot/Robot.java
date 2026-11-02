@@ -40,6 +40,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         checkMemory();
+        Utils.UpdateLoop();
         // System.out.println(HootReplay.isFileLoaded());
         m_timeAndJoystickReplay.update();
         m_robotContainer.Periodic();

@@ -94,7 +94,7 @@ public class Telemetry {
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
     public void telemeterize(SwerveDriveState state) {
         /* telemtreize the Shoot pose */
-        PassSooht.setPose(new Pose2d(Utils.passPose.apply(state.Pose),Rotation2d.kZero));
+        PassSooht.setPose(new Pose2d(Utils.passPose.get(),Rotation2d.kZero));
         HubPose.setPose(new Pose2d(Utils.hubPoseSupllier.get(),Rotation2d.kZero));
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);

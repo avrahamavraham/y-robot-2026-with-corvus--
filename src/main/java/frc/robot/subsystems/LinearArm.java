@@ -74,8 +74,8 @@ public class LinearArm extends SubsystemBase {
 
     /* leader and follower motors */
     private final CANBus kCANBus = new CANBus("subsystems");
-    // private final TalonFX leaderMotor = new TalonFX(55, kCANBus);
-    private final TalonFX leaderMotor = TalonFX.none();
+    private final TalonFX leaderMotor = new TalonFX(55, kCANBus);
+    // private final TalonFX leaderMotor = TalonFX.none();
 
 
     /* device status signals */

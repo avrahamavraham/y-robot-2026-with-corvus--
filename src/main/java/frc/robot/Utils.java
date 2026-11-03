@@ -29,8 +29,7 @@ public class Utils {
     public static Supplier<Translation2d> hubPoseSupllier = ()-> AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint.toTranslation2d());
     public static Supplier<Translation2d> passPose = 
         ()-> AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)).getTranslation();
-    private static Supplier<ShootOnTheMoveSolver.Solution> solutionSupplier= ()-> new ShootOnTheMoveSolver.
-    Solution(0, Rotation2d.kZero, Rotation2d.kZero, Rotation2d.kZero, Rotation2d.kZero, false);
+    private static Supplier<ShootOnTheMoveSolver.Solution> solutionSupplier= ()-> new ShootOnTheMoveSolver.Solution();
     public static DoubleSupplier rPMSupplier = ()->solutionSupplier.get().rpm();
     public static Supplier<Rotation2d> YawSupllier = ()-> solutionSupplier.get().chassisYaw();
     private static boolean isUpdated = false;
@@ -77,8 +76,22 @@ public class Utils {
         new ShootOnTheMoveSolver.Config()
         .clampStrategy(ShootOnTheMoveSolver.ClampStrategy.LEAST_SQUARES)
         .efficiency(0.9)
-        .hoodAngleDegMap(HoodDegreeMap)
-        .rpmMap(RPMmap)
+        .fixedHoodDeg(62)
+        .shot(1.50, 2218.0)
+        .shot(1.75, 2272.0)
+        .shot(2.00, 2345.0)
+        .shot(2.25, 2427.0)
+        .shot(2.50, 2512.0)
+        .shot(2.75, 2599.0)
+        .shot(3.00, 2687.0)
+        .shot(3.25, 2775.0)
+        .shot(3.50, 2862.0)
+        .shot(3.75, 2949.0)
+        .shot(4.00, 3035.0)
+        .shot(4.25, 3120.0)
+        .shot(4.50, 3204.0)
+        .shot(4.75, 3288.0)
+        .shot(5.00, 3371.0)
         .hoodLimitsDeg(62, 62)
         .rpmLimits(1000, 5500)
         .shooterOffset(0.16222, 0.00944)

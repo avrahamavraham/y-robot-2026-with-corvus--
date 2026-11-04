@@ -29,12 +29,21 @@ public class Utils {
         ()-> AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)).getTranslation();
 
     // The solver reuses one Solution object, so this is the same object every loop.
+    //shot to hub
     private static ShootOnTheMoveSolver.Solution sol = new ShootOnTheMoveSolver.Solution();
     private static Rotation2d yaw = Rotation2d.kZero;
     private static boolean isUpdated = false;
 
     public static DoubleSupplier rPMSupplier = ()-> { refresh(); return sol.rpm(); };
     public static Supplier<Rotation2d> YawSupllier = ()-> { refresh(); return yaw; };
+    // The solver reuses one Solution object, so this is the same object every loop.
+    //pass
+    private static ShootOnTheMoveSolver.Solution solPass = new ShootOnTheMoveSolver.Solution();
+    private static Rotation2d yawPass = Rotation2d.kZero;
+    private static boolean isUpdatedPass = false;
+
+    public static DoubleSupplier rPMSupplierPass = ()-> { refresh(); return solPass.rpm(); };
+    public static Supplier<Rotation2d> YawSupllierPass = ()-> { refresh(); return yawPass; };
 
     /** Solves at most once per loop, and only when something reads rPMSupplier / YawSupllier. */
     private static void refresh() {
@@ -55,7 +64,28 @@ public class Utils {
             hub.getX(), hub.getY());
         yaw = sol.chassisYaw(); // one small allocation per loop, only while shooting
         isUpdated = true;
+        refreshPass();
     }
+        private static void refreshPass() {
+        if (isUpdatedPass || subs == null) {
+            return;
+        }
+        var st = subs.drivetrain.getState(); // single call
+        Rotation2d r = st.Pose.getRotation();
+        double c = r.getCos();
+        double s = r.getSin();
+        ChassisSpeeds v = st.Speeds; // robot-relative -> field-relative by hand
+        Translation2d hub = passPose.get();
+        solPass = shootOnTheMoveSolver.calculate(
+            st.Pose.getX(), st.Pose.getY(), r.getRadians(),
+            v.vxMetersPerSecond * c - v.vyMetersPerSecond * s,
+            v.vxMetersPerSecond * s + v.vyMetersPerSecond * c,
+            v.omegaRadiansPerSecond,
+            hub.getX(), hub.getY());
+        yawPass = sol.chassisYaw(); // one small allocation per loop, only while shooting
+        isUpdatedPass = true;
+    }
+
 
     public static void init(Subsystems sub){
         subs = sub;

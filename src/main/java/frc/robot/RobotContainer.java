@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -20,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Commands.CommandCollction;
+import frc.robot.Commands.CommandCollection;
 import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
@@ -53,7 +54,7 @@ public class RobotContainer {
     public FollowPath.Builder FirstpathBuilder;
 
     //Commands
-    public CommandCollction commandCollction = new CommandCollction(subsystems);
+    public CommandCollection commandCollction = new CommandCollection(subsystems);
 
     public RobotContainer() {
         configureBindings();
@@ -64,13 +65,13 @@ public class RobotContainer {
     private void InitAutoChosser(){
         
         autoChooser.addOption("Auto1", FirstpathBuilder.build(new Path("path1"))
-        .andThen(commandCollction.FullShotAuto())
+        .andThen(commandCollction.runFullShotAuto())
         .andThen(pathBuilder.build(new Path("path2")))
-        .andThen(commandCollction.FullShot()));
+        .andThen(commandCollction.runFullShot()));
         autoChooser.addOption("Auto2",FirstpathBuilder.withShouldMirror(()-> true).build(new Path("path1"))        
-        .andThen(commandCollction.FullShotAuto())
+        .andThen(commandCollction.runFullShotAuto())
         .andThen(pathBuilder.withShouldMirror(()-> true).build(new Path("path2")))
-        .andThen(commandCollction.FullShot()));
+        .andThen(commandCollction.runFullShot()));
         FirstpathBuilder.withShouldMirror(()-> false);
         pathBuilder.withShouldMirror(()-> false);
         autoChooser.setDefaultOption("none", Commands.print("None"));
@@ -170,20 +171,13 @@ public class RobotContainer {
             subsystems.drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
         // Reset the field-centric heading on left bumper press.
-        Controllers.driveController.touchpad().onTrue(subsystems.drivetrain.runOnce(subsystems.drivetrain::seedFieldCentric));
+        Controllers.driveController.touchpad().onTrue(subsystems.drivetrain.runOnce(subsystems.drivetrain::seedFieldCentric).ignoringDisable(true));
 
         subsystems.drivetrain.registerTelemetry(logger::telemeterize);
     }
-    private LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
+    public static LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
     private void IntakeBinding() {
-        // joystick.a().onTrue(Commands.runOnce(()->{
-        //     if (LinearArmsetpoint == LinearArm.Setpoint.in) {
-        //         LinearArmsetpoint = LinearArm.Setpoint.out;
-        //     }
-        //     else{
-        //         LinearArmsetpoint = LinearArm.Setpoint.in;
-        //     }
-        // }));
+        Controllers.driveController.L2().onTrue(commandCollction.ChangeIntake());
     subsystems.linear_arm.setDefaultCommand(subsystems.linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
     new Trigger(()->subsystems.linear_arm.getPosition()
         .isNear(LinearArm.Setpoint.out.target, Degree.of(2)))

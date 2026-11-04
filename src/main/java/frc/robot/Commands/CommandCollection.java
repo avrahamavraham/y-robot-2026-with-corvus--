@@ -59,7 +59,9 @@ public class CommandCollection {
             return facingAngle
                 .withTargetDirection(Utils.YawSupllierPass.get().plus(Rotation2d.k180deg))
                 .withVelocityX(-Controllers.driveController.getLeftY())
-                .withVelocityY(-Controllers.driveController.getLeftX());
+                .withVelocityY(-Controllers.driveController.getLeftX());    
         });
     }
+    public Command runFullShotPass() {return runAlignPass().alongWith(runShooterToRpmPass());}
+
 }

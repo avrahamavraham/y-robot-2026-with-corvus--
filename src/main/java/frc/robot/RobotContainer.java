@@ -85,7 +85,12 @@ public class RobotContainer {
         IntakeBinding();
         //shoter
         ShooterBinding();
-                
+        
+
+        Controllers.driveController.L2().onTrue(commandCollction.ChangeIntake());
+        Controllers.driveController.R2().whileTrue(commandCollction.runFullShot());
+        Controllers.driveController.R1().whileTrue(commandCollction.runFullShotPass());
+
     }
 
     public void Periodic(){
@@ -177,7 +182,6 @@ public class RobotContainer {
     }
     public static LinearArm.Setpoint LinearArmsetpoint = LinearArm.Setpoint.in;
     private void IntakeBinding() {
-        Controllers.driveController.L2().onTrue(commandCollction.ChangeIntake());
     subsystems.linear_arm.setDefaultCommand(subsystems.linear_arm.goToSetpoint(()-> {return LinearArmsetpoint;}));
     new Trigger(()->subsystems.linear_arm.getPosition()
         .isNear(LinearArm.Setpoint.out.target, Degree.of(2)))

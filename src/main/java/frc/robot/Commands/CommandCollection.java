@@ -4,8 +4,6 @@
 
 package frc.robot.Commands;
 
-import java.lang.ModuleLayer.Controller;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 
@@ -37,8 +35,10 @@ public class CommandCollection {
                 .withVelocityY(0);
         });
     }
-    public Command runFullShot() {return runAlignHub().alongWith(runShooterToRpmHub());}
-    public Command runFullShotAuto() {return runFullShot().withTimeout(5);} 
+    public Command runFullShot() {return runAlignHub().alongWith(runShooterToRpmHub())
+        .finallyDo(sub.shooter.drive(()-> 0)::execute);}
+    public Command runFullShotAuto() {return runAlignHub().alongWith(runShooterToRpmHub())
+        .withTimeout(5).finallyDo(sub.shooter.drive(()-> 0)::execute);} 
     public Command ChangeIntake(){
        return Commands.runOnce(()->{
             if (RobotContainer.LinearArmsetpoint == LinearArm.Setpoint.in) {

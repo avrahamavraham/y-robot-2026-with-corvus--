@@ -106,15 +106,6 @@ public class RobotContainer {
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
     private Indexer.Setpoint indexerSetpoint = Indexer.Setpoint.stop;
     private void ShooterBinding() {
-        Controllers.driveController.L1().onTrue(Commands.runOnce(()->{
-            System.out.println("check");
-            if (shooterSetpoint == Shooter.Setpoint.Near) {
-                shooterSetpoint = Shooter.Setpoint.Far;
-            }
-            else{
-                shooterSetpoint = Shooter.Setpoint.Near;
-            }
-        }));
         subsystems.shooter.setDefaultCommand(subsystems.shooter.drive(()->{return shooterSetpoint;}));
         subsystems.shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.index;

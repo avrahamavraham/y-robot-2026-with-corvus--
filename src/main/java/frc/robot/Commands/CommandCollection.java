@@ -35,19 +35,19 @@ public class CommandCollection {
                 .withVelocityY(0);
         });
     }
-    public Command runFullShot() {return runAlignHub().alongWith(runShooterToRpmHub())
-        .finallyDo(sub.shooter.drive(()-> 0)::execute);}
-    public Command runFullShotAuto() {return runAlignHub().alongWith(runShooterToRpmHub())
-        .withTimeout(5).finallyDo(sub.shooter.drive(()-> 0)::execute);} 
+    public Command runFullShot() {return runAlignHub().alongWith(runShooterToRpmHub());}
+    public Command runFullShotAuto() {
+        return runAlignHub().alongWith(runShooterToRpmHub())
+        .withTimeout(5);
+    } 
     public Command ChangeIntake(){
-       return Commands.runOnce(()->{
-            if (RobotContainer.LinearArmsetpoint == LinearArm.Setpoint.in) {
-                RobotContainer.LinearArmsetpoint = LinearArm.Setpoint.out;
-            }
-            else{
-                RobotContainer.LinearArmsetpoint = LinearArm.Setpoint.in;
-            }
-        });
+       return Commands.either(OpenIntake(), CloseIntake(), ()-> RobotContainer.LinearArmsetpoint == LinearArm.Setpoint.in);
+    }
+    public Command OpenIntake(){
+        return Commands.runOnce(()-> RobotContainer.LinearArmsetpoint = LinearArm.Setpoint.out);
+    }
+    public Command CloseIntake(){
+        return Commands.runOnce(()-> RobotContainer.LinearArmsetpoint = LinearArm.Setpoint.in);
     }
     public Command runShooterToRpmPass(){
         return sub.shooter.drive(Utils.rPMSupplierPass);

@@ -23,6 +23,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.*;
@@ -67,7 +68,7 @@ public class Shooter extends SubsystemBase {
     private final StatusSignal<Current> leaderMotorTorqueCurrent = leaderMotor.getTorqueCurrent(false);
 
     /* controls used by the leader motors */
-    private final VelocityVoltage leaderMotorSetpointRequest = new VelocityVoltage(0);
+    private final VelocityVoltage leaderMotorSetpointRequest = new VelocityVoltage(0).withEnableFOC(true);
     private final CoastOut coastRequest = new CoastOut();
 
     /* simulation */
@@ -226,7 +227,7 @@ public class Shooter extends SubsystemBase {
     public Command drive(DoubleSupplier setpoint){
         return run(()->{
             leaderMotor.setControl(leaderMotorSetpointRequest.withVelocity(setpoint.getAsDouble()));
-        });
+        }).finallyDo(()->leaderMotor.setVoltage(0));
     }
     /**
      * Coasts the shooter.

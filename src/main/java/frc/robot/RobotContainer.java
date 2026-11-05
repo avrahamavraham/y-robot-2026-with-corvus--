@@ -13,6 +13,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,8 +23,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.PathFinding.PathFinding;
 import frc.robot.Commands.CommandCollection;
-import frc.robot.autos.AutoFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
@@ -46,10 +48,6 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     //subsystems
     public final Subsystems subsystems = new Subsystems();
-    public final AutoFactory autoFactory = new AutoFactory(
-        new PIDController(2.3, 0, 0),
-        new PIDController(2.3, 0, 0),
-        subsystems.drivetrain);
     public FollowPath.Builder pathBuilder;
     public FollowPath.Builder FirstpathBuilder;
 
@@ -100,7 +98,9 @@ public class RobotContainer {
         
 
     public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        // return autoChooser.getSelected();
+        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0), pathBuilder, subsystems.drivetrain);
+        return pathFinding.PathfindAndFollow(()->subsystems.drivetrain.getState().Pose, new Pose2d(1,2.5, Rotation2d.k180deg));
     }
     private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;
@@ -108,14 +108,14 @@ public class RobotContainer {
     private void ShooterBinding() {
         subsystems.shooter.setDefaultCommand(subsystems.shooter.drive(()->{return shooterSetpoint;}));
         subsystems.shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
-            indexerSetpoint = Indexer.Setpoint.index;
-        })).onFalse(Commands.runOnce(()->{
+            indexerSetpoint = Indexer.Setpoint.index;               
+        })).onTrue(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.stop;
         }));
         subsystems.indexer.setDefaultCommand(subsystems.indexer.drive(()->{return indexerSetpoint;}));
         subsystems.indexer.createIsNearTargetTrigger(RotationsPerSecond.of(1)).onTrue(Commands.runOnce(()->{
             kickerSetpoint = Kicker.Setpoint.kicking;
-        })).onFalse(Commands.runOnce(()->{
+        })).onTrue(Commands.runOnce(()->{
             kickerSetpoint = Kicker.Setpoint.stop;
         }));
         subsystems.kicker.setDefaultCommand(subsystems.kicker.drive(()->{return kickerSetpoint;}));
@@ -127,10 +127,11 @@ public class RobotContainer {
 
         pathBuilder = new FollowPath.Builder(
             subsystems.drivetrain, ()-> subsystems.drivetrain.getState().Pose, 
-            ()->subsystems.drivetrain.getState().Speeds, (speeds)->{
+            ()->subsystems.drivetrain.getState().Speeds, 
+            (speeds)->{
                 subsystems.drivetrain.setControl(
-                    driveRobotCentric.withVelocityX(speeds.vxMetersPerSecond + Controllers.driveController.getLeftY())
-                    .withVelocityY(speeds.vyMetersPerSecond + Controllers.driveController.getLeftX())
+                    driveRobotCentric.withVelocityX(speeds.vxMetersPerSecond)
+                    .withVelocityY(speeds.vyMetersPerSecond)
                     .withRotationalRate(speeds.omegaRadiansPerSecond));
             }, 
             new PIDController(2.3, 0, 0), 
@@ -177,7 +178,7 @@ public class RobotContainer {
     new Trigger(()->subsystems.linear_arm.getPosition()
         .isNear(LinearArm.Setpoint.out.target, Degree.of(2)))
             .onTrue(subsystems.intakeRoller.drive(()->IntakeRoller.Setpoint.Run))
-            .onFalse(subsystems.intakeRoller.drive(()->IntakeRoller.Setpoint.Stop));
+            .onTrue(subsystems.intakeRoller.drive(()->IntakeRoller.Setpoint.Stop));
     }
     public void resetRobot(){
         System.out.println(DriverStation.isDisabled());

@@ -1,10 +1,14 @@
 package frc.robot;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -12,6 +16,7 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.Publisher;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
@@ -22,15 +27,19 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.lib.BLine.FollowPath;
 
 public class Telemetry {
     private final double MaxSpeed;
 
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final Map<String,Publisher> pubMap = new HashMap<>();
     /**
      * Construct a telemetry object, with the specified max speed of the robot
      * 
      * @param maxSpeed Maximum speed in meters per second
      */
+    @SuppressWarnings("unchecked")
     public Telemetry(double maxSpeed) {
         MaxSpeed = maxSpeed;
         SignalLogger.start();
@@ -40,10 +49,29 @@ public class Telemetry {
         for (int i = 0; i < 4; ++i) {
             SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
         }
+        FollowPath.setPoseLoggingConsumer(
+            (piar)->{
+                pubMap.computeIfAbsent(
+                    piar.getFirst(), 
+                    (key)-> inst.getStructTopic(key, Pose2d.struct).publish());
+                pubMap.computeIfPresent(piar.getFirst(),
+                    (key,pub)-> {((StructPublisher<Pose2d>)pub).accept(piar.getSecond());
+                    return pub;}
+                    );
+                });
+        FollowPath.setTranslationListLoggingConsumer(
+            (piar)->{
+                pubMap.computeIfAbsent(
+                    piar.getFirst(), 
+                    (key)-> inst.getStructArrayTopic(key, Translation2d.struct).publish());
+                pubMap.computeIfPresent(piar.getFirst(),
+                    (key,pub)-> {((StructArrayPublisher<Translation2d>)pub).accept(piar.getSecond());
+                    return pub;}
+                    );
+                });
     }
 
     /* What to publish over networktables for telemetry */
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     /* Where to Shoot */
     private final Field2d ShootFiled = new Field2d(); 
     private final FieldObject2d PassSooht = ShootFiled.getObject("PassPose");

@@ -16,12 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -30,8 +25,8 @@ import eth.epieffe.jwalker.Graph;
 import eth.epieffe.jwalker.Heuristic;
 import eth.epieffe.jwalker.Visit;
 import eth.epieffe.jwalker.Visits;
+import frc.lib.AllianceFlipUtil;
 import frc.lib.FieldConstants;
-import frc.robot.lib.BLine.BLineField;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.lib.BLine.Path.TranslationTarget;
@@ -39,8 +34,6 @@ import frc.robot.lib.BLine.Path.Waypoint;
 
 /** Add your docs here. */
 public class PathFinding {
-    private NetworkTableInstance instance = NetworkTableInstance.getDefault();
-    private StructArrayPublisher<Translation2d> translationPublisher = instance.getStructArrayTopic("transltion2dPathfinding", Translation2d.struct).publish();
     private Graph<Cell> grid;
     private FollowPath.Builder pathBuilder;
     private Subsystem driveTrain;
@@ -50,7 +43,7 @@ public class PathFinding {
     private int cols;
     public PathFinding(boolean[][] grid,FollowPath.Builder pathBuilder,Subsystem driveTrain){
         this.grid = new Grid(grid);
-        this.pathBuilder = pathBuilder;
+        this.pathBuilder = pathBuilder.withShouldFlip(()-> false);
         this.driveTrain = driveTrain;
         this.rows = grid.length;
         this.cols = grid[0].length;
@@ -83,12 +76,11 @@ public class PathFinding {
         List<Translation2d> translation2dPath = path.stream().map((EdgeCell)-> {
             return toTranslation(EdgeCell.destination);
         }).toList();
-        translationPublisher.accept(translation2dPath.toArray(Translation2d[]::new));
         return translation2dPath;
     }
 
     public Path pathFindPathCreate(Pose2d robotPose, Pose2d targetPose){
-        // targetPose = AllianceFlipUtil.apply(targetPose);
+        targetPose = AllianceFlipUtil.apply(targetPose);
         TranslationTarget[] translationTarget = PathFindToPoint(robotPose, targetPose).stream().map((translation)-> new TranslationTarget(translation)).toArray(TranslationTarget[]::new); 
         if (translationTarget.length == 0) {
             return new Path();
@@ -100,9 +92,6 @@ public class PathFinding {
             path.addPathElement(translationTarget2);
         } 
         path.addPathElement(endWayPoint);
-        Field2d field = new Field2d();
-        SmartDashboard.putData("PathFinding", field);
-        BLineField.drawPath(field, path);
         return path;
     }
     public Command PathfindAndFollow(Supplier<Pose2d> robotPose,Pose2d targetPose){

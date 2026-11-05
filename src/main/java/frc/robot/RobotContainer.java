@@ -72,6 +72,10 @@ public class RobotContainer {
         .andThen(commandCollction.runFullShot()));
         FirstpathBuilder.withShouldMirror(()-> false);
         pathBuilder.withShouldMirror(()-> false);
+
+        
+        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0), pathBuilder, subsystems.drivetrain);
+        autoChooser.addOption("pathFIndTOPoseCheck",pathFinding.PathfindAndFollow(()->subsystems.drivetrain.getState().Pose, new Pose2d(1,2.5, Rotation2d.k180deg)));
         autoChooser.setDefaultOption("none", Commands.print("None"));
         SmartDashboard.putData("AutoChooser", autoChooser);
     }
@@ -98,9 +102,7 @@ public class RobotContainer {
         
 
     public Command getAutonomousCommand() {
-        // return autoChooser.getSelected();
-        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0), pathBuilder, subsystems.drivetrain);
-        return pathFinding.PathfindAndFollow(()->subsystems.drivetrain.getState().Pose, new Pose2d(1,2.5, Rotation2d.k180deg));
+        return autoChooser.getSelected();
     }
     private Kicker.Setpoint kickerSetpoint = Kicker.Setpoint.stop;
     private Shooter.Setpoint shooterSetpoint = Shooter.Setpoint.Near;

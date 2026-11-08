@@ -27,9 +27,10 @@ import eth.epieffe.jwalker.Visit;
 import eth.epieffe.jwalker.Visits;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.FieldConstants;
+import frc.lib.PathFinding.BLinePathBuilder.Result;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
-import frc.robot.lib.BLine.Path.TranslationTarget;
+import frc.robot.lib.BLine.Path.PathConstraints;
 import frc.robot.lib.BLine.Path.Waypoint;
 
 /** Add your docs here. */
@@ -51,6 +52,8 @@ public class PathFinding {
         this.cellSizeY = FieldConstants.fieldWidth/ grid[0].length;
     }
 
+    //helper functions
+
     private Translation2d toTranslation(Cell cell) {
         return new Translation2d((cell.row() + 0.5) * cellSizeX,
                                 (cell.col() + 0.5) * cellSizeY);
@@ -62,6 +65,8 @@ public class PathFinding {
         c = Math.max(0, Math.min(cols - 1, c));
         return new Cell(r, c);
     }
+
+    
     public List<Translation2d> PathFindToPoint(Pose2d robotPose, Pose2d targetPose){
         Cell target = toCell(targetPose.getTranslation());
         Cell start = toCell(robotPose.getTranslation());
@@ -81,17 +86,17 @@ public class PathFinding {
 
     public Path pathFindPathCreate(Pose2d robotPose, Pose2d targetPose){
         targetPose = AllianceFlipUtil.apply(targetPose);
-        TranslationTarget[] translationTarget = PathFindToPoint(robotPose, targetPose).stream().map((translation)-> new TranslationTarget(translation)).toArray(TranslationTarget[]::new); 
-        if (translationTarget.length == 0) {
+        List<Translation2d> translationTarget = PathFindToPoint(robotPose, targetPose);  
+        if (translationTarget.size() == 0) {
             return new Path();
         }
-        Waypoint startWayPoint = new Waypoint(robotPose);
+
         Waypoint endWayPoint = new Waypoint(targetPose);
-        var path = new Path(startWayPoint);
-        for (TranslationTarget translationTarget2 : translationTarget) {
-            path.addPathElement(translationTarget2);
-        } 
+        Result Pathresult = BLinePathBuilder.build(translationTarget, robotPose.getRotation(), targetPose.getRotation(), 5, 2, 0);
+        Path path = new Path(Pathresult.elements(), new PathConstraints().setMaxVelocityMetersPerSec(Pathresult.velocityConstraints()));
         path.addPathElement(endWayPoint);
+        path.setPathConstraints(new PathConstraints()
+        .setMaxAccelerationMetersPerSec2(20).setMaxVelocityMetersPerSec(4.5));
         return path;
     }
     public Command PathfindAndFollow(Supplier<Pose2d> robotPose,Pose2d targetPose){

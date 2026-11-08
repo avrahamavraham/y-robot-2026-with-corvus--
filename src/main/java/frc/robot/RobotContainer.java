@@ -74,7 +74,7 @@ public class RobotContainer {
         pathBuilder.withShouldMirror(()-> false);
 
         
-        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0), pathBuilder, subsystems.drivetrain);
+        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0.30), pathBuilder, subsystems.drivetrain);
         autoChooser.addOption("pathFIndTOPoseCheck",pathFinding.PathfindAndFollow(()->subsystems.drivetrain.getState().Pose, new Pose2d(1,2.5, Rotation2d.k180deg)));
         autoChooser.setDefaultOption("none", Commands.print("None"));
         SmartDashboard.putData("AutoChooser", autoChooser);

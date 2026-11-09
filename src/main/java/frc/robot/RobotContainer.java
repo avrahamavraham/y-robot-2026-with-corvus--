@@ -72,10 +72,9 @@ public class RobotContainer {
         .andThen(commandCollction.runFullShot()));
         FirstpathBuilder.withShouldMirror(()-> false);
         pathBuilder.withShouldMirror(()-> false);
-
-        
-        PathFinding pathFinding = new PathFinding(PathFinding.load("navgrid.json", 0.30), pathBuilder, subsystems.drivetrain);
-        autoChooser.addOption("pathFIndTOPoseCheck",pathFinding.PathfindAndFollow(()->subsystems.drivetrain.getState().Pose, new Pose2d(1,2.5, Rotation2d.k180deg)));
+        PathFinding pathFinding = 
+            new PathFinding(PathFinding.load("Navgrid.json", 0.8), pathBuilder, subsystems.drivetrain);
+        autoChooser.addOption("Path find", pathFinding.PathfindAndFollow(new Pose2d(1, 5, Rotation2d.k180deg)));
         autoChooser.setDefaultOption("none", Commands.print("None"));
         SmartDashboard.putData("AutoChooser", autoChooser);
     }
@@ -110,7 +109,7 @@ public class RobotContainer {
     private void ShooterBinding() {
         subsystems.shooter.setDefaultCommand(subsystems.shooter.drive(()->{return shooterSetpoint;}));
         subsystems.shooter.createIsNearTargetTrigger(RotationsPerSecond.of(2)).onTrue(Commands.runOnce(()->{
-            indexerSetpoint = Indexer.Setpoint.index;               
+            indexerSetpoint = Indexer.Setpoint.index;
         })).onTrue(Commands.runOnce(()->{
             indexerSetpoint = Indexer.Setpoint.stop;
         }));

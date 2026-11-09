@@ -19,7 +19,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import eth.epieffe.jwalker.Edge;
 import eth.epieffe.jwalker.Graph;
 import eth.epieffe.jwalker.Heuristic;
@@ -32,17 +31,18 @@ import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.lib.BLine.Path.PathConstraints;
 import frc.robot.lib.BLine.Path.Waypoint;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /** Add your docs here. */
 public class PathFinding {
     private Graph<Cell> grid;
     private FollowPath.Builder pathBuilder;
-    private Subsystem driveTrain;
+    private CommandSwerveDrivetrain driveTrain;
     private double cellSizeX;
     private double cellSizeY;
     private int rows;
     private int cols;
-    public PathFinding(boolean[][] grid,FollowPath.Builder pathBuilder,Subsystem driveTrain){
+    public PathFinding(boolean[][] grid,FollowPath.Builder pathBuilder,CommandSwerveDrivetrain driveTrain){
         this.grid = new Grid(grid);
         this.pathBuilder = pathBuilder.withShouldFlip(()-> false);
         this.driveTrain = driveTrain;
@@ -99,8 +99,8 @@ public class PathFinding {
         .setMaxAccelerationMetersPerSec2(20).setMaxVelocityMetersPerSec(4.5));
         return path;
     }
-    public Command PathfindAndFollow(Supplier<Pose2d> robotPose,Pose2d targetPose){
-        return Commands.defer(()-> pathBuilder.build(pathFindPathCreate(robotPose.get(), targetPose)), 
+    public Command PathfindAndFollow(Pose2d targetPose){
+        return Commands.defer(()-> pathBuilder.build(pathFindPathCreate(driveTrain.getState().Pose, targetPose)), 
         Set.of(driveTrain));
     }
 

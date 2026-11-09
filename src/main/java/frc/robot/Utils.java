@@ -24,6 +24,7 @@ public class Utils {
     //shot on the move
     private static Subsystems subs;
     private static ShootOnTheMoveSolver shootOnTheMoveSolver;
+    private static ShootOnTheMoveSolver shootOnTheMoveSolverPass;
     public static Supplier<Translation2d> hubPoseSupllier = ()-> AllianceFlipUtil.apply(FieldConstants.Hub.innerCenterPoint.toTranslation2d());
     public static Supplier<Translation2d> passPose =
         ()-> AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)).getTranslation();
@@ -50,18 +51,7 @@ public class Utils {
         if (isUpdated || subs == null) {
             return;
         }
-        var st = subs.drivetrain.getState(); // single call
-        Rotation2d r = st.Pose.getRotation();
-        double c = r.getCos();
-        double s = r.getSin();
-        ChassisSpeeds v = st.Speeds; // robot-relative -> field-relative by hand
-        Translation2d hub = hubPoseSupllier.get();
-        sol = shootOnTheMoveSolver.calculate(
-            st.Pose.getX(), st.Pose.getY(), r.getRadians(),
-            v.vxMetersPerSecond * c - v.vyMetersPerSecond * s,
-            v.vxMetersPerSecond * s + v.vyMetersPerSecond * c,
-            v.omegaRadiansPerSecond,
-            hub.getX(), hub.getY());
+        sol = shootOnTheMoveSolver.calculate();
         yaw = sol.chassisYaw(); // one small allocation per loop, only while shooting
         isUpdated = true;
         refreshPass();
@@ -70,19 +60,8 @@ public class Utils {
         if (isUpdatedPass || subs == null) {
             return;
         }
-        var st = subs.drivetrain.getState(); // single call
-        Rotation2d r = st.Pose.getRotation();
-        double c = r.getCos();
-        double s = r.getSin();
-        ChassisSpeeds v = st.Speeds; // robot-relative -> field-relative by hand
-        Translation2d hub = passPose.get();
-        solPass = shootOnTheMoveSolver.calculate(
-            st.Pose.getX(), st.Pose.getY(), r.getRadians(),
-            v.vxMetersPerSecond * c - v.vyMetersPerSecond * s,
-            v.vxMetersPerSecond * s + v.vyMetersPerSecond * c,
-            v.omegaRadiansPerSecond,
-            hub.getX(), hub.getY());
-        yawPass = sol.chassisYaw(); // one small allocation per loop, only while shooting
+        solPass = shootOnTheMoveSolverPass.calculate();
+        yawPass = solPass.chassisYaw(); // one small allocation per loop, only while shooting
         isUpdatedPass = true;
     }
 
@@ -92,9 +71,7 @@ public class Utils {
         passPose = ()-> sub.drivetrain.getState().Pose.nearest(List.of(
         AllianceFlipUtil.apply(new Pose2d(2.5,5.5,Rotation2d.kZero)),
         AllianceFlipUtil.apply(new Pose2d(2.5,FieldConstants.fieldWidth - 5.5,Rotation2d.kZero)))).getTranslation();
-
-        shootOnTheMoveSolver = new ShootOnTheMoveSolver(
-        new ShootOnTheMoveSolver.Config()
+        ShootOnTheMoveSolver.Config config = new ShootOnTheMoveSolver.Config()
         .clampStrategy(ShootOnTheMoveSolver.ClampStrategy.LEAST_SQUARES)
         .fixedHoodDeg(62)
         .shot(1.40, 2250)
@@ -137,9 +114,20 @@ public class Utils {
         .rpmLimits(1000, 5500)
         .shooterOffset(0.16222, 0.00944)
         .wheelDiameterMeters(Inch.of(3).in(Meter))
-        .shooterFacingDeg(180));
+        .shooterFacingDeg(180);
+        shootOnTheMoveSolver = new ShootOnTheMoveSolver(
+        ()-> sub.drivetrain.getState().Pose,
+        ()-> ChassisSpeeds.fromRobotRelativeSpeeds(sub.drivetrain.getState().Speeds, sub.drivetrain.getState().Pose.getRotation()),
+        hubPoseSupllier,
+        config);
+        shootOnTheMoveSolverPass = new ShootOnTheMoveSolver(
+        ()-> sub.drivetrain.getState().Pose,
+        ()-> ChassisSpeeds.fromRobotRelativeSpeeds(sub.drivetrain.getState().Speeds, sub.drivetrain.getState().Pose.getRotation()) ,
+        passPose,
+        config);
     }
     public static void UpdateLoop(){
         isUpdated = false;
+        isUpdatedPass = false;
     }
 }

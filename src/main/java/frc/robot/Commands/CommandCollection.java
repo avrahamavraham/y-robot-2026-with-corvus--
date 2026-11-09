@@ -6,6 +6,7 @@ package frc.robot.Commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,15 +23,19 @@ public class CommandCollection {
     public CommandCollection(Subsystems sub) {
         this.sub = sub;
     }
+
+
+    // shooter function and commands
     public Command runShooterToRpmHub() {
         return sub.shooter.drive(Utils.rPMSupplier);
     }
     public Command runAlignHub() {
         SwerveRequest.FieldCentricFacingAngle facingAngle = new FieldCentricFacingAngle()
-            .withHeadingPID(2.3, 0, 0);
+            .withHeadingPID(2.3, 0, 0)
+            .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
         return sub.drivetrain.applyRequest(() -> {
             return facingAngle
-                .withTargetDirection(Utils.YawSupllier.get().plus(Rotation2d.k180deg))
+                .withTargetDirection(Utils.YawSupllier.get())
                 .withVelocityX(0)
                 .withVelocityY(0);
         });
@@ -57,7 +62,7 @@ public class CommandCollection {
             .withHeadingPID(2.3, 0, 0);
         return sub.drivetrain.applyRequest(() -> {
             return facingAngle
-                .withTargetDirection(Utils.YawSupllierPass.get().plus(Rotation2d.k180deg))
+                .withTargetDirection(Utils.YawSupllierPass.get())
                 .withVelocityX(-Controllers.driveController.getLeftY())
                 .withVelocityY(-Controllers.driveController.getLeftX());    
         });
